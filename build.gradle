@@ -20,6 +20,14 @@ dependencies {
     implementation group: 'org.ow2.asm', name: 'asm-util', version: '9.7'
 }
 
+jar {
+    //noinspection GroovyAssignabilityCheck
+
+    manifest {
+        attributes "Universal-Authenticated": "9827e4a4-155a-4e77-9591-e46df8c2e8bb"
+    }
+}
+
 test {
     useJUnitPlatform()
 }
