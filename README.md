@@ -1,110 +1,54 @@
 # ASM Helper
 
-This is a library that makes modifying jars easier we will be using it to help us make changes to ModFiles in Universal.
+ASM Helper is a library designed to facilitate the modification of JAR files, simplifying the process of making changes to ModFiles within the Universal framework.
+This library is versatile and can be utilized in various contexts beyond Universal.
 
-However, you can use it in any fashion.
+# Examples
+[Examples can be seen here](./examples).
 
-All remapping is handled by yourself not via this.
+# Importing
+### Maven
+* Include JitPack in your maven build file
 
-### Examples
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
 
-<details>
+* Add ASMHelper as a dependency
 
-<summary>Making a ClassManager</summary>
+```xml
+<dependency>
+    <groupId>com.github.Universal-ModLoader</groupId>
+    <artifactId>ASMHelper</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```
 
-```java
-import com.universal.asm.manager.ClassManager;
 
-public static void main(String[] args) {
-    ClassManager classManager = new ClassManager();
+### Gradle
+* Add JitPack to your root `build.gradle` at the end of repositories
+
+```gradle
+repositories {
+    maven {
+        url 'https://jitpack.io'
+    }
 }
 ```
 
-</details>
+* Add the dependency
 
-<details>
-
-<summary>Modifying a Class or a Resource</summary>
-
-```java
-import com.universal.asm.changes.IClassChange;
-import com.universal.asm.changes.IResourceChange;
-import com.universal.asm.manager.ClassManager;
-
-import java.io.File;
-import java.util.Random;
-
-
-public static void main(String[] args) {
-    ClassManager classManager = new ClassManager();
-
-    File file = new File("RandomFile.jar");
-
-    classManager.readJarFile(file);
-    
-    IClassChange[] classChanges = new IClassChange[] {
-            classNode -> {
-                classNode.name = "Example" + new Random().nextInt(1000);
-
-                return classNode;
-            }
-    };
-
-    IResourceChange[] resourceChanges = new IResourceChange[] {
-            (name, bytes) -> {
-                if (name.equalsIgnoreCase("META-INF/MANIFEST.MF")) {
-                    // then modify information in here using the bytes
-                }
-                return new ResourceFile(name, bytes);
-            }
-    };
-
-    classManager.applyChanges(classChanges, resourceChanges);
+```gradle
+dependencies {
+    implementation 'com.github.Universal-ModLoader:ASMHelper:1.0.1'
 }
 ```
 
-</details>
+# License
 
-<details>
-
-<summary>Generating the output information</summary>
-
-```java
-import com.universal.asm.changes.IClassChange;
-import com.universal.asm.changes.IResourceChange;
-import com.universal.asm.file.IOutputFile;
-import com.universal.asm.manager.ClassManager;
-
-import java.io.File;
-import java.util.Random;
-
-public static void main(String[] args) {
-    ClassManager classManager = new ClassManager();
-    File file = new File("RandomFile.jar");
-    
-    classManager.readJarFile(file);
-
-    IClassChange[] classChanges = new IClassChange[] {
-            classNode -> {
-                classNode.name = "Example" + new Random().nextInt(1000);
-
-                return classNode;
-            }
-    };
-
-    IResourceChange[] resourceChanges = new IResourceChange[] {
-            (name, bytes) -> {
-                if (name.equalsIgnoreCase("META-INF/MANIFEST.MF")) {
-                    // then modify information in here using the bytes
-                }
-                return new ResourceFile(name, bytes);
-            }
-    };
-
-    classManager.applyChanges(classChanges, resourceChanges);
-    
-    IOutputFile outputFile = classManager.outputFile(); // this is it yes i know
-}
-```
-
-</details>
+[ASMHelper is licensed under MIT](./LICENSE).
