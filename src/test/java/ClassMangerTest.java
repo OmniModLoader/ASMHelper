@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class ClassMangerTest {
 
+    // I will write more tests as more content gets added to this.
     @Test
     public void testNullFile() throws IOException {
         ClassManager classManager = new ClassManager();
@@ -29,10 +30,5 @@ public class ClassMangerTest {
         file.deleteOnExit();
 
         assertThrows(NullPointerException.class, () -> classManager.readJarFile(null));
-    }
-
-    @Test
-    public void testIOutputFile() throws IOException {
-        ClassManager classManager = new ClassManager();
     }
 }

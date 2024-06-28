@@ -24,6 +24,9 @@ jar {
     //noinspection GroovyAssignabilityCheck
 
     manifest {
+        // This value is supposed to change after every major version.
+        // More info on this is not really an identifier that is the only way of verifying approved Jars
+        // That have higher load order.
         attributes "Universal-Authenticated": "9827e4a4-155a-4e77-9591-e46df8c2e8bb"
     }
 }
