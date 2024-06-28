@@ -4,7 +4,6 @@ import com.universal.asm.changes.IClassChange;
 import com.universal.asm.changes.IResourceChange;
 import com.universal.asm.file.IOutputFile;
 import com.universal.asm.file.ResourceFile;
-import jdk.jfr.Description;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -20,14 +19,55 @@ import java.util.zip.ZipOutputStream;
 /**
  * <h6>ClassManager manages a collection of classes and resources from a JAR file.
  * <p>It provides methods to read a JAR file, apply changes to classes and resources,
- * and generate an output ZIP file containing modified classes and resources.
+ * and generate an {@linkplain IOutputFile} containing modified classes and resources.
+ *
+ * <h6>Usage</h6>
+ *
+ * <pre>{@code
+ * public static void main(String[] args) {
+ *     // Create instance of ClassManager.
+ *     ClassManager classManager = new ClassManager();
+ *
+ *     // Locate a file you want to read.
+ *     File file = new File("Random.jar");
+ *
+ *     classManager.readJarFile(file); // This reads and populates both the classes list and the resources map.
+ *
+ *     // There are multiple ways to create IClassChanges and even IResourceChanges.
+ *     // Today I will be doing them the simplest way just for this JavaDoc.
+ *     classManager.applyChanges(classNode -> {
+ *         classNode.name = "hiiii";
+ *         return classNode;
+ *     });
+ *
+ *     classManager.applyChanges((name, bytes) -> {
+ *         name = "testOutput";
+ *         return new ResourceFile(name, bytes);
+ *     });
+ *
+ *     // Then create an IOutputFile.
+ *     IOutputFile outputFile = classManager.outputFile();
+ *
+ *     // Then we want to close our ClassManager.
+ *     classManager.close();
+ * }
+ * }</pre>
  *
  * @author <b><a href="https://github.com/CadenCCC">Caden</a></b>
  * @since 1.0.0
  */
 public class ClassManager implements IClassManager {
+    /**
+     * Represents the name of the JAR file inputted.
+     */
     private String fileName;
+    /**
+     * Represents the resources of the JAR file inputted.
+     */
     private final HashMap<String, byte[]> resources = new HashMap<>();
+    /**
+     * Represents the classes of the JAR file inputted.
+     */
     private final ArrayList<ClassNode> classes = new ArrayList<>();
 
     /**
@@ -44,11 +84,6 @@ public class ClassManager implements IClassManager {
 
         if (!fileInput.getName().endsWith(".jar")) {
             throw new RuntimeException("Input File HAS to be a Jar file, or end with .jar!");
-        }
-
-        if (fileInput.getName().contains("\\")) {
-            this.fileName = fileInput.getName().substring(fileInput.getName().lastIndexOf('\\'));
-            this.fileName = fileName.replace("\\", "");
         }
 
         try (JarFile jar = new JarFile(fileInput)) {
@@ -75,16 +110,17 @@ public class ClassManager implements IClassManager {
     }
 
     /**
-     * <h6>Applies changes to the classes and resources based on the provided arrays of changes.
-     * <p>It iterates over the {@linkplain #classes} and {@linkplain #resources} collections, applying changes using
-     * {@linkplain IClassChange} and {@linkplain IResourceChange} implementations respectively.
+     * <h6>Applies changes to classes based on a provided array of {@linkplain IClassChange}.
+     * <p>This method iterates through the {@linkplain #classes} list, applying changes using the list of {@linkplain IClassChange} provided.
      *
-     * @param classChanges   Array of {@linkplain IClassChange} implementations for modifying classes.
-     * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
+     * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes.
      */
     @Override
-    public void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges) {
-        Objects.requireNonNull(classChanges, "The value 'classChanges' cannot be NULL.");
+    public void applyChanges(IClassChange... classChanges) {
+        if (classChanges == null || classChanges.length == 0) {
+            return;
+        }
+
         if (classes.isEmpty()) {
             return;
         }
@@ -113,34 +149,57 @@ public class ClassManager implements IClassManager {
             }
         }
 
-        /* Applying resource changes and replacing them */
-        if (resourceChanges != null && !resources.isEmpty()) {
-            Map<String, byte[]> modifiedResources = new HashMap<>();
-            for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
-                if (modifiedResources.containsKey(entry.getKey())) {
-                    continue;
-                }
+    }
 
-                if (resourceChanges.length == 0) {
-                    modifiedResources.put(entry.getKey(), entry.getValue());
-                    continue;
-                }
+    /**
+     * <h6>Applies changes to resources based on a provided array of {@linkplain IResourceChange}.
+     * <p>This method iterates through the {@linkplain #resources} map, applying changes using the list of {@linkplain IResourceChange} provided.
+     *
+     * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
+     */
+    @Override
+    public void applyChanges(IResourceChange... resourceChanges) {
+        if (resourceChanges == null || resourceChanges.length == 0) {
+            return;
+        }
 
-                for (IResourceChange resourceChange : resourceChanges) {
-                    if (resourceChange == null) {
-                        continue;
-                    }
+        if (resources.isEmpty()) {
+            return;
+        }
 
-                    // apply resource change
-                    ResourceFile apply = resourceChange.applyResourceChange(entry.getKey(), entry.getValue());
-                    modifiedResources.put(apply.getKey(), apply.getValue());
-                }
+        Map<String, byte[]> modifiedResources = new HashMap<>();
+        for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
+            if (modifiedResources.containsKey(entry.getKey())) {
+                continue;
             }
 
-            // update resources with modified values
-            resources.clear();
-            resources.putAll(modifiedResources);
+            for (IResourceChange resourceChange : resourceChanges) {
+                if (resourceChange == null) {
+                    continue;
+                }
+
+                // apply resource change
+                ResourceFile resourceFile = resourceChange.applyChange(entry.getKey(), entry.getValue());
+                modifiedResources.put(resourceFile.getKey(), resourceFile.getValue());
+            }
         }
+
+        // update resources with modified values
+        resources.clear();
+        resources.putAll(modifiedResources);
+    }
+
+    /**
+     * <h6>Applies changes to the classes and resources based on the provided arrays of changes.
+     * <p>It delegates to {@linkplain #applyChanges(IClassChange...)} and {@linkplain #applyChanges(IResourceChange...)} methods to process the classes and resources
+     *
+     * @param classChanges   Array of {@linkplain IClassChange} implementations for modifying classes.
+     * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
+     */
+    @Override
+    public void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges) {
+        applyChanges(classChanges);
+        applyChanges(resourceChanges);
     }
 
     /**
@@ -151,7 +210,7 @@ public class ClassManager implements IClassManager {
      * @return An instance of {@linkplain IOutputFile} representing the generated output file.
      */
     @Override
-    public IOutputFile outputFile() { // I hate this maybe fix later
+    public IOutputFile outputFile() {
         return new IOutputFile() {
             @Override
             public String getFileName() {
@@ -208,14 +267,19 @@ public class ClassManager implements IClassManager {
         resources.clear();
     }
 
-    @Description("Going to move this to another file like a Util soon")
+
+    /**
+     * <h6>Going to move to a "common" project for the Universal Loader
+     */
     private byte[] toByteArray(InputStream input) throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         copy(input, output);
         return output.toByteArray();
     }
 
-    @Description("Going to move this to another file like a Util soon")
+    /**
+     * <h6>Going to move to a "common" project for the Universal Loader
+     */
     private void copy(InputStream input, OutputStream output) throws IOException {
         byte[] buffer = new byte[8192]; // 8KB buffer size (adjust as needed)
         int bytesRead;

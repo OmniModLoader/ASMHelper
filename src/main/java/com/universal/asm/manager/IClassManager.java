@@ -24,17 +24,31 @@ public interface IClassManager {
     void readJarFile(File fileInput);
 
     /**
+     * Applies changes to the loaded classes based on an array of {@linkplain IClassChange}.
+     *
+     * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes.
+     */
+    void applyChanges(IClassChange... classChanges);
+
+    /**
+     * Applies changes to the loaded resources based on an array of {@linkplain IResourceChange}.
+     *
+     * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
+     */
+    void applyChanges(IResourceChange... resourceChanges);
+
+    /**
      * Applies changes to the loaded classes and resources based on provided change arrays.
      *
-     * @param classChanges   Array of IClassChange implementations for modifying classes.
-     * @param resourceChanges Array of IResourceChange implementations for modifying resources.
+     * @param classChanges   Array of {@linkplain IClassChange} implementations for modifying classes.
+     * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
      */
     void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges);
 
     /**
      * Generates an output file containing modified classes and resources.
      *
-     * @return An instance of IOutputFile representing the generated output file.
+     * @return An instance of {@linkplain IOutputFile} representing the generated output file.
      */
     IOutputFile outputFile();
 
