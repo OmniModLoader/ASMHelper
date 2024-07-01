@@ -44,7 +44,7 @@ public interface IClassManager {
      * @param classChanges   Array of {@linkplain IClassChange} implementations for modifying classes.
      * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
      */
-    @Deprecated(since = "1.1.2")
+    @Deprecated()
     void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges);
 
     /**

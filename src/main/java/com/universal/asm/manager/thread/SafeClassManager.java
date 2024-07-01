@@ -268,7 +268,7 @@ public class SafeClassManager implements IClassManager {
      *             methods separately instead.
      */
     @Override
-    @Deprecated(since = "1.1.2")
+    @Deprecated()
     public void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges) {
         // This will function until I fully to decide to remove this as this is deprecated.
         applyChanges(classChanges);
