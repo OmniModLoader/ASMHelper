@@ -3,6 +3,7 @@
 If you want the example file you can find it [here](./java/me/examples/ExampleFile.java).
 
 ### Implementing IClassChange
+
 <details>
 <summary>Code...</summary>
 
@@ -22,9 +23,11 @@ public static class RenameChange implements IClassChange {
     }
 }
 ```
+
 </details>
 
 ### Implementing IResourceChange
+
 <details>
 <summary>Code...</summary>
 
@@ -44,9 +47,11 @@ public static class ManifestChange implements IResourceChange {
     }
 }
 ```
+
 </details>
 
 ### Adding the changes to the ClassManager
+
 <details>
 <summary>Code...</summary>
 
@@ -71,7 +76,7 @@ public static class Main {
         classManager.applyChanges(new ManifestChange()); // Apply the IResourceChange in here. You can input as many as you want.
 
         // There are multiple ways of using `applyChanges`, I will show you another way you can do it.
-        
+
         /* Another Way */
         IClassChange[] classChanges = new IClassChange[] {new RenameChange()}; // A list of IClassChanges
 
@@ -82,9 +87,11 @@ public static class Main {
     }
 }
 ```
+
 </details>
 
 ### Creating an IOutputFile
+
 <details>
 <summary>Code...</summary>
 
@@ -109,9 +116,11 @@ public static class Example {
     }
 }
 ```
+
 </details>
 
 ### Implementing IClassManager
+
 <details>
 <summary>Code...</summary>
 
@@ -157,4 +166,11 @@ public static class CustomClassManager implements IClassManager {
     }
 }
 ```
+
 </details>
+
+# Additions
+
+Any ClassManager's such as [SafeClassManager](../src/main/java/com/universal/asm/manager/thread/SafeClassManager.java)
+and any other that is added in the future will have the safe functionality as the original
+[ClassManager](../src/main/java/com/universal/asm/manager/ClassManager.java).
