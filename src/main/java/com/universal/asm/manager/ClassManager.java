@@ -17,7 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * <h6>ClassManager manages a collection of classes and resources from a JAR file.
+ * <h6>{@linkplain ClassManager} manages a collection of classes and resources from a JAR file.
  * <p>It provides methods to read a JAR file, apply changes to classes and resources,
  * and generate an {@linkplain IOutputFile} containing modified classes and resources.
  *
@@ -62,13 +62,13 @@ public class ClassManager implements IClassManager {
      */
     private String fileName;
     /**
-     * Represents the resources of the JAR file inputted.
-     */
-    private final HashMap<String, byte[]> resources = new HashMap<>();
-    /**
      * Represents the classes of the JAR file inputted.
      */
     private final ArrayList<ClassNode> classes = new ArrayList<>();
+    /**
+     * Represents the resources of the JAR file inputted.
+     */
+    private final HashMap<String, byte[]> resources = new HashMap<>();
 
     /**
      * <h6>Reads a JAR file and populates the {@linkplain #classes} and {@linkplain #resources} collections.
@@ -79,34 +79,56 @@ public class ClassManager implements IClassManager {
      * @param fileInput The input File object representing the JAR file to be read.
      */
     @Override
-    public void readJarFile(File fileInput) {
+    public void readJarFile(File fileInput) { // If you can make this faster I ask you to please do so and then commit to my stuff... I'd also love to meet you I can't seem to make it faster.
         Objects.requireNonNull(fileInput, "You cannot have a NULL file as an input.");
 
         if (!fileInput.getName().endsWith(".jar")) {
             throw new RuntimeException("Input File HAS to be a Jar file, or end with .jar!");
         }
 
+        this.fileName = fileInput.getName();
+
         try (JarFile jar = new JarFile(fileInput)) {
-            Enumeration<JarEntry> entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
+            List<JarEntry> classEntries = Collections.list(jar.entries());
 
-                /* Adding classes */
-                if (entry.getName().endsWith(".class")) {
-                    ClassNode node = new ClassNode(Opcodes.ASM9);
-                    ClassReader currentClassReader = new ClassReader(jar.getInputStream(entry));
-                    currentClassReader.accept(node, 0);
-                    classes.add(node);
-                    continue;
+            for (JarEntry classEntry : classEntries) {
+                String name = classEntry.getName();
+
+                try {
+                    /* Creating streams */
+                    // We need to make sure we have all the streams available, so we can close them later on. (saving performance)
+                    InputStream stream = jar.getInputStream(classEntry);
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+                    byte[] value = this.toByteArray(stream, outputStream);
+
+                    /* Adding classes */
+                    if (name.contains(".class")) {
+                        ClassNode node = new ClassNode(Opcodes.ASM9);
+                        ClassReader classReader = new ClassReader(value);
+                        classReader.accept(node, 0);
+                        classes.add(node);
+                    } else {
+                        /* Adding non-class entries */
+                        if (resources.containsKey(name)) {
+                            return;
+                        }
+
+                        resources.putIfAbsent(name, value);
+                    }
+
+                    // Closing streams to free resources.
+                    stream.close();
+                    outputStream.close();
+                } catch (IOException ignored) {
+                    // Ignore exceptions during processing.
                 }
-
-                /* Adding non-class resources */
-                resources.put(entry.getName(), this.toByteArray(jar.getInputStream(entry)));
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error reading JAR file: " + e.getMessage(), e);
         }
+
     }
 
     /**
@@ -195,9 +217,14 @@ public class ClassManager implements IClassManager {
      *
      * @param classChanges   Array of {@linkplain IClassChange} implementations for modifying classes.
      * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
+     * @deprecated This method is deprecated and will be removed in a future version.
+     *             Use {@link #applyChanges(IClassChange...)} and {@link #applyChanges(IResourceChange...)}
+     *             methods separately instead.
      */
     @Override
+    @Deprecated(since = "1.1.2")
     public void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges) {
+        // This will function until I fully to decide to remove this as this is deprecated.
         applyChanges(classChanges);
         applyChanges(resourceChanges);
     }
@@ -271,21 +298,15 @@ public class ClassManager implements IClassManager {
     /**
      * <h6>Going to move to a "common" project for the Universal Loader
      */
-    private byte[] toByteArray(InputStream input) throws IOException {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        copy(input, output);
-        return output.toByteArray();
-    }
-
-    /**
-     * <h6>Going to move to a "common" project for the Universal Loader
-     */
-    private void copy(InputStream input, OutputStream output) throws IOException {
-        byte[] buffer = new byte[8192]; // 8KB buffer size (adjust as needed)
+    private byte[] toByteArray(InputStream inputStream, ByteArrayOutputStream byteArrayOutputStream) throws IOException {
+        byte[] buffer = new byte[8192];
         int bytesRead;
-        while ((bytesRead = input.read(buffer)) != -1) {
-            output.write(buffer, 0, bytesRead);
+
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, bytesRead);
         }
+
+        return byteArrayOutputStream.toByteArray();
     }
 
     public String getFileName() {
