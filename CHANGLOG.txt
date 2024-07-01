@@ -1,0 +1,7 @@
++---------------------1.1.2---------------------+
+- Made a thread safe ClassManager.
+- Fixed `fileName` being null because I did not set it.
+- Added a dev program in Main.class, it just prints the time on reading a jar.
+- More improvements on the normal ClassManager (The thread safe class manager is faster)
+- Writing a build.properties.
+- Added onto examples README.
