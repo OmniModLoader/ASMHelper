@@ -89,7 +89,7 @@ import java.util.zip.ZipOutputStream;
  * }</pre>
  *
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
- * @since 1.1.2
+ * @since 1.1.3
  */
 public class SafeClassManager implements IClassManager {
     /**

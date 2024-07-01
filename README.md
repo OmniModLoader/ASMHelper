@@ -29,7 +29,7 @@ This library is versatile and can be utilized in various contexts beyond Univers
 <dependency>
     <groupId>com.github.Universal-ModLoader</groupId>
     <artifactId>ASMHelper</artifactId>
-    <version>1.1.2</version>
+    <version>1.1.3</version>
 </dependency>
 ```
 
@@ -49,7 +49,7 @@ repositories {
 
 ```gradle
 dependencies {
-    implementation 'com.github.Universal-ModLoader:ASMHelper:1.1.2'
+    implementation 'com.github.Universal-ModLoader:ASMHelper:1.1.3'
 }
 ```
 

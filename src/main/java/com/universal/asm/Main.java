@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 /**
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
- * @since 1.1.2
+ * @since 1.1.3
  */
 public class Main {
 
