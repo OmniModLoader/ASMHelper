@@ -40,9 +40,11 @@ public interface IClassManager {
     /**
      * Applies changes to the loaded classes and resources based on provided change arrays.
      *
+     * @deprecated Will be deprecated soon so just don't use this method as it serves almost zero purpose unless proved otherwise.
      * @param classChanges   Array of {@linkplain IClassChange} implementations for modifying classes.
      * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
      */
+    @Deprecated(since = "1.1.2")
     void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges);
 
     /**
