@@ -1,4 +1,5 @@
 import com.universal.asm.manager.ClassManager;
+import com.universal.asm.manager.thread.SafeClassManager;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -17,6 +18,7 @@ public class ClassMangerTest {
     @Test
     public void testNullFile() throws IOException {
         ClassManager classManager = new ClassManager();
+        SafeClassManager safeClassManager = new SafeClassManager();
 
         File file = new File("HelloWorldTest.txt");
 
@@ -26,9 +28,10 @@ public class ClassMangerTest {
         writer.close();
 
         assertThrows(RuntimeException.class, () -> classManager.readJarFile(file));
-
+        assertThrows(RuntimeException.class, () -> safeClassManager.readJarFile(file));
         file.deleteOnExit();
 
         assertThrows(NullPointerException.class, () -> classManager.readJarFile(null));
+        assertThrows(NullPointerException.class, () -> safeClassManager.readJarFile(null));
     }
 }
