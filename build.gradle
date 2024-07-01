@@ -2,9 +2,6 @@ plugins {
     id 'java'
 }
 
-group = 'com.universal.asm'
-version = '1.0.1'
-
 repositories {
     mavenCentral()
 }
@@ -21,16 +18,40 @@ dependencies {
 }
 
 jar {
-    //noinspection GroovyAssignabilityCheck
 
     manifest {
         // This value is supposed to change after every major version.
         // More info on this is not really an identifier that is the only way of verifying approved Jars
         // That have higher load order.
-        attributes "Universal-Authenticated": "9827e4a4-155a-4e77-9591-e46df8c2e8bb"
+        attributes "Universal-Authenticated": authenticationKey,
+                "Main-Class": mainClass
     }
 }
 
 test {
     useJUnitPlatform()
 }
+
+/* Fat Jar */
+def runtimeDependencies = configurations.runtimeClasspath.collect {
+    it.isDirectory() ? it : zipTree(it)
+}
+
+configurations {
+    runtimeClasspath
+}
+
+task fatJar(type: Jar) {
+    from sourceSets.main.output
+    from runtimeDependencies
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Exclude duplicates explicitly
+    manifest {
+        attributes "Universal-Authenticated": authenticationKey,
+                "Main-Class": mainClass
+    }
+    archiveFileName = "ASMHelper-" + version + "-all.jar"
+
+}
+
+
+build.dependsOn fatJar
