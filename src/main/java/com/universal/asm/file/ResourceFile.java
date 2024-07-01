@@ -1,13 +1,13 @@
 package com.universal.asm.file;
 
 import com.universal.asm.changes.IResourceChange;
-import com.universal.asm.manager.ClassManager;
+import com.universal.asm.manager.IClassManager;
 
 import java.util.Map;
 
 /**
  * <h6>Represents a resource file entry for managing binary data in a key-value format.
- * <p>Used within {@linkplain ClassManager}, at {@linkplain ClassManager#applyChanges(IResourceChange...)} to encapsulate modified resources.
+ * <p>Used within {@linkplain IClassManager}, at {@linkplain IClassManager#applyChanges(IResourceChange...)} to encapsulate modified resources.
  * <p>Implements {@linkplain java.util.Map.Entry} where the key is a {@code String} identifier
  * and the value is a {@code byte[]} array.
  *
