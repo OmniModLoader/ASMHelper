@@ -29,14 +29,10 @@ public class Main {
         Scanner fileInput = new Scanner(System.in);
         String input = fileInput.nextLine();
 
-        File file = new File(input); // todo new version is gonna be 1.1.2
+        File file = new File(input);
         if (!file.exists()) {
             throw new RuntimeException(input + " does not exist.");
         }
-
-        // The addition to the second number is because im adding more ClassManagers
-        // The addition to the last number is because im fixing a fileName Bug
-
 
         if (output.equalsIgnoreCase("y")) {
             // Thread safe manager
