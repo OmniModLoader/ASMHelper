@@ -1,10 +1,13 @@
 package com.universal.asm.changes;
 
+import com.universal.asm.file.ClassFile;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
- * <h6>Functional interface for applying changes to a {@linkplain ClassNode} instance.
- * <p>Implementations of this interface define logic to modify a given {@linkplain ClassNode}.
+ * <h6>Functional interface for applying changes to a class file represented as byte data.
+ * <p>Implementations of this interface define logic to modify a given class file.
+ * <p>Implementors should provide logic to transform a class file represented as
+ * byte data into a {@link ClassFile} object, encapsulating the modified class file.
  *
  * @author <b><a href="https://github.com/CadenCCC">Caden</a></b>
  * @since 1.0.0
@@ -13,11 +16,12 @@ import org.objectweb.asm.tree.ClassNode;
 public interface IClassChange {
 
     /**
-     * Applies changes to the provided {@linkplain ClassNode} instance.
+     * Applies changes to the provided class file data.
      *
-     * @param classNode The {@linkplain ClassNode} instance to be modified.
-     * @return The modified {@linkplain ClassNode} instance after applying changes.
+     * @param name       The name or identifier of the class.
+     * @param classBytes The byte data representing the class file to be modified.
+     * @return The {@link ClassFile} object representing the modified class file.
      */
-    ClassNode applyChanges(ClassNode classNode);
+    ClassFile applyChange(String name, byte[] classBytes);
 
 }
