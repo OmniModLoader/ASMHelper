@@ -2,23 +2,17 @@ package com.universal.asm.manager.thread;
 
 import com.universal.asm.changes.IClassChange;
 import com.universal.asm.changes.IResourceChange;
+import com.universal.asm.file.ClassFile;
 import com.universal.asm.file.IOutputFile;
 import com.universal.asm.file.ResourceFile;
 import com.universal.asm.manager.ClassManager;
 import com.universal.asm.manager.IClassManager;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.ClassNode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -26,8 +20,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * <h6>{@linkplain SafeClassManager} is an implementation of {@linkplain IClassManager} designed to manage a collection of classes and resources from a JAR file in a thread-safe manner.
- * <p>It provides methods to read JAR files, apply changes to both classes and resources, and generate an {@linkplain IOutputFile} that encapsulates the modifications made to the JAR file.
+ * <h6>{@linkplain SafeClassManager} is an implementation of {@linkplain IClassManager} designed to manage a collection
+ * of classes and resources from a JAR file in a thread-safe manner.
+ * <p>It provides methods to read JAR files, apply changes to both classes and resources, and generate an
+ * {@linkplain IOutputFile} that encapsulates the modifications made to the JAR file.
  *
  * <p><b>Thread Safety:</b>
  * <ul>
@@ -45,7 +41,7 @@ import java.util.zip.ZipOutputStream;
  *
  * <p><b>Future Development:</b>
  * <ul>
- *   <li>Since version 1.1.2, {@linkplain SafeClassManager} has implemented robust thread safety measures, surpassing those available in {@linkplain ClassManager}.
+ *   <li>Since version 1.1.3, {@linkplain SafeClassManager} has implemented robust thread safety measures, surpassing those available in {@linkplain ClassManager}.
  *       Ongoing updates aim to further refine these capabilities, ensuring seamless support for concurrent environments.</li>
  *   <li>It's important to note that {@linkplain ClassManager} remains inherently non-thread-safe, and there are no plans to retrofit it with thread-safe features.</li>
  * </ul>
@@ -56,36 +52,33 @@ import java.util.zip.ZipOutputStream;
  * <p><b>Usage:</b></p>
  * <pre>{@code
  *    public static void main(String[] args) {
- *         // Creating an instance of `SafeClassManager`.
- *         SafeClassManager classManager = new SafeClassManager();
+ *        // Creating an instance of SafeClassManager.
+ *        SafeClassManager classManager = new SafeClassManager();
  *
- *         File file = new File("Random.jar"); // The JAR file you want to read.
+ *        classManager.readJarFile(new File("Random.jar")); // JAR you want to read.
  *
- *         // Reading the jar file, remember I recommend only reading one file at a time.
- *         classManager.readJarFile(file);
+ *        // Applying changes to classes.
+ *        classManager.applyChanges((IClassChange) (name, classBytes) -> { // This is the new way of applying changes.
+ *            // You have to set up your own ClassReader and ClassWriter.
+ *            // Then in this example we are accepting a class that extends ClassVisitor.
+ *            ClassReader cr = new ClassReader(classBytes);
+ *            ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
+ *            cr.accept(new TestVisitor(Opcodes.ASM9, writer), ClassReader.EXPAND_FRAMES);
+ *            // You have to change the name separately as of right now.
  *
- *         // Example of applying class Changes.
- *         classManager.applyChanges(new IClassChange() {
- *             @Override
- *             public ClassNode applyChanges(ClassNode classNode) {
- *                 classNode.name = "Hello :)"; // This is an example of what you might want to do, but remember that this will overwrite everything...
- *                 return classNode;
- *             }
- *         });
+ *            return new ClassFile("Modified" + name, writer.toByteArray()); // Returns a ClassFile.
+ *        });
  *
- *         // Example of applying resource changes.
- *         classManager.applyChanges(new IResourceChange() {
- *             @Override
- *             public ResourceFile applyChange(String name, byte[] data) {
- *                 name = "Monkey :)"; // This will keep overwriting until the last one read.
- *                 return new ResourceFile(name, data); // This has to return a ResourceFile or something that extends it.
- *             }
- *         });
+ *        // Applying changes to resources
+ *        classManager.applyChanges((IResourceChange) (name, data) -> { // This is the new way of applying changes.
+ *            name = "Monkey"; // This will overwrite every entry and cause issues don't use this as code.
+ *            return new ResourceFile(name, data); // Returns a ResourceFile.
+ *        });
  *
- *         IOutputFile outputFile = classManager.outputFile(); // This is the way you get the fileName, and bytes of the changes you did.
+ *        IOutputFile outputFile = classManager.outputFile(); // This returns the Output data.
  *
- *         classManager.close(); // It is recommended you close the classManager for security reasons.
- *     }
+ *        byte[] outputBytes = outputFile.getFileInBytes(Deflater.DEFLATED); // This is how you set the Compression Level.
+ *    }
  * }</pre>
  *
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
@@ -100,7 +93,7 @@ public class SafeClassManager implements IClassManager {
      * Represents the classes read from the input file.
      * <p>We utilize a {@linkplain ConcurrentHashMap} to enhance performance and ensure synchronized access.</p>
      */
-    private final ConcurrentHashMap<String, ClassNode> classes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, byte[]> classes = new ConcurrentHashMap<>();
     /**
      * Represents the non-class resources read from the JAR file.
      */
@@ -109,10 +102,15 @@ public class SafeClassManager implements IClassManager {
     /**
      * <h6>Reads a JAR file and populates the {@linkplain #classes} and {@linkplain #resources} collections.
      * <p>If the JAR file contains classes (.class files), they are parsed using ASM library
-     * and stored as {@linkplain ClassNode} objects in the {@linkplain #classes} alongside with the classes names.
-     * Other resources are stored in the {@linkplain #resources} map.
+     * and stored as byte arrays in the {@linkplain #classes} map. Other resources are stored in the
+     * {@linkplain #resources} map.
      *
-     * <p>This method is synchronized to ensure thread safety during the file reading and data population process.
+     * <p><b>Thread Safety:</b>
+     * <ul>
+     *   <li>This method is synchronized to ensure thread safety during the file reading and data population process.</li>
+     *   <li>It utilizes a {@linkplain ConcurrentHashMap} for {@linkplain #classes} and {@linkplain #resources} to prevent issues related to simultaneous data modification from multiple threads.</li>
+     *   <li>Parallel processing of JAR entries ensures efficient handling of file contents while maintaining thread-safe practices.</li>
+     * </ul>
      *
      * @param fileInput The input File object representing the JAR file to be read. Must not be null.
      * @throws RuntimeException If the provided file is not a JAR file or if an I/O error occurs.
@@ -135,7 +133,11 @@ public class SafeClassManager implements IClassManager {
             // Process each entry in parallel.
             entries.parallelStream().forEach(jarEntry -> {
                 String entryName = jarEntry.getName();
-                try  {
+                if (entryName.endsWith("/")) { // Can't read folders
+                    return;
+                }
+
+                try {
                     /* Creating streams */
                     // We need to make sure we have all the streams available, so we can close them later on. (saving performance)
                     InputStream inputStream = jarFile.getInputStream(jarEntry);
@@ -149,10 +151,7 @@ public class SafeClassManager implements IClassManager {
                             return;
                         }
 
-                        ClassNode classNode = new ClassNode(Opcodes.ASM9);
-                        ClassReader reader = new ClassReader(value);
-                        reader.accept(classNode, ClassReader.EXPAND_FRAMES);
-                        classes.putIfAbsent(entryName, classNode); // don't know why I am doing this here.
+                        classes.putIfAbsent(entryName, value); // don't know why I am doing this here.
                     } else {
                         /* Adding non-class entries */
                         resources.putIfAbsent(entryName, value);
@@ -174,12 +173,18 @@ public class SafeClassManager implements IClassManager {
     /**
      * <h6>Applies a series of class changes to the classes stored in {@linkplain #classes}.
      * <p>This method synchronizes on {@linkplain #classes} to ensure thread safety during
-     * modification of class nodes. It iterates through each class node and applies all specified
-     * {@linkplain IClassChange} objects. If a change modifies a class node, it updates the node
-     * in the {@linkplain #classes} map.
+     * modification of class nodes. It iterates through each class entry's and applies all specified
+     * {@linkplain IClassChange} objects. If a change modifies a class entry, it updates the entry in the
+     * {@linkplain #classes} map.
      *
-     * @param classChanges One or more {@linkplain IClassChange} objects representing the changes
-     *                     to be applied to the classes.
+     * <p><b>Thread Safety:</b>
+     * <ul>
+     *   <li>This method ensures thread safety by synchronizing on the {@linkplain #classes} map during modification operations.</li>
+     *   <li>It uses a {@linkplain ConcurrentHashMap} to store intermediate modified data, allowing safe concurrent updates.</li>
+     *   <li>Sequential processing of class changes further ensures data consistency and avoids race conditions.</li>
+     * </ul>
+     * @param classChanges One or more {@linkplain IClassChange} objects representing the changes to be applied to the
+     *                     classes.
      */
     @Override
     public void applyChanges(IClassChange... classChanges) {
@@ -191,36 +196,51 @@ public class SafeClassManager implements IClassManager {
             return;
         }
 
-        synchronized (classes) {
-            classes.entrySet().parallelStream().forEach(entry -> {
-                ClassNode classNode = entry.getValue();
+        // Use a ConcurrentHashMap to store intermediate modified data.
+        ConcurrentHashMap<String, byte[]> tempHashMap = new ConcurrentHashMap<>(classes);
 
-                for (IClassChange change : classChanges) {
-                    if (change == null) {
-                        continue;
-                    }
+        // Apply changes sequentially.
+        for (IClassChange change : classChanges) {
+            ConcurrentHashMap<String, byte[]> updatedTempHashMap = new ConcurrentHashMap<>();
 
-                    ClassNode modifiedNode = change.applyChanges(classNode);
-                    if (modifiedNode != null && modifiedNode != classNode) {
-                        // Update classNode if it was modified.
-                        synchronized (entry) {
-                            entry.setValue(modifiedNode);
-                        }
-                    }
+            // Process each class entry.
+            tempHashMap.forEach((className, classData) -> {
+                // Apply the current change to the class data.
+                ClassFile modifiedClassFile = change.applyChange(className, classData);
+
+                if (modifiedClassFile != null) {
+                    // Update the intermediate map with the modified data.
+                    updatedTempHashMap.put(modifiedClassFile.getKey(), modifiedClassFile.getValue());
                 }
             });
+
+            // Update the intermediate map for the next iteration.
+            tempHashMap = updatedTempHashMap;
+        }
+
+        // Replace the original classes map with the final modified data.
+        synchronized (classes) {
+            classes.clear();
+            classes.putAll(tempHashMap);
         }
     }
 
     /**
      * <h6>Applies a series of {@linkplain IResourceChange}'s to the resources stored in {@linkplain #resources}.
      * <p>This method synchronizes on {@linkplain #resources} to ensure thread safety during
-     * modification of resource entries. It iterates through each resource entry and applies
-     * all specified {@linkplain IResourceChange} objects. If a change modifies a resource,
-     * it updates the resource in the {@linkplain #resources} map.
+     * modification of resource entries. It iterates through each resource entry and applies all specified
+     * {@linkplain IResourceChange} objects. If a change modifies a resource, it updates the resource in the
+     * {@linkplain #resources} map.
      *
-     * @param resourceChanges One or more {@linkplain IResourceChange} objects representing the changes
-     *                        to be applied to the resources.
+     * <p><b>Thread Safety:</b>
+     * <ul>
+     *   <li>This method ensures thread safety by synchronizing on the {@linkplain #resources} map during modification operations.</li>
+     *   <li>It utilizes a {@linkplain ConcurrentHashMap} to store intermediate modified data, allowing safe concurrent updates.</li>
+     *   <li>Sequential processing of resource changes further ensures data consistency and avoids race conditions.</li>
+     * </ul>
+     *
+     * @param resourceChanges One or more {@linkplain IResourceChange} objects representing the changes to be applied to
+     *                        the resources.
      */
     @Override
     public void applyChanges(IResourceChange... resourceChanges) {
@@ -232,62 +252,49 @@ public class SafeClassManager implements IClassManager {
             return;
         }
 
-        synchronized (resources) {
-            resources.entrySet().parallelStream().forEach((entry) -> {
-                String key = entry.getKey();
-                byte[] value = entry.getValue();
+        // Use a ConcurrentHashMap to store intermediate modified data.
+        ConcurrentHashMap<String, byte[]> tempHashMap = new ConcurrentHashMap<>(resources);
 
-                for (IResourceChange change : resourceChanges) {
-                    if (change != null) {
-                        ResourceFile modifiedResource = change.applyChange(key, value);
-                        if (modifiedResource != null) {
-                            // Update resource if it was modified
-                            synchronized (entry) {
-                                entry = modifiedResource;
-                            }
-                        }
-                    }
+        // Apply changes sequentially.
+        for (IResourceChange change : resourceChanges) {
+            ConcurrentHashMap<String, byte[]> updatedTempHashMap = new ConcurrentHashMap<>();
+
+            // Process each resource entry.
+            tempHashMap.forEach((resourceName, resourceData) -> {
+
+                // Apply the current change to the resource data.
+                ResourceFile modifiedResourceFile = change.applyChange(resourceName, resourceData);
+
+                if (modifiedResourceFile != null) {
+                    // Update the intermediate map with the modified data.
+                    updatedTempHashMap.put(modifiedResourceFile.getKey(), modifiedResourceFile.getValue());
                 }
             });
+
+            // Update the intermediate map for the next iteration.
+            tempHashMap = updatedTempHashMap;
+        }
+
+        // Replace the original resources map with the final modified data.
+        synchronized (resources) {
+            resources.clear();
+            resources.putAll(tempHashMap);
         }
     }
 
     /**
-     * <h6>Applies a series of class and resource changes to the respective collections.
-     * <p>This method is deprecated and will be removed in future versions. It currently
-     * functions by separately applying {@code classChanges} and {@code resourceChanges}
-     * using the {@link #applyChanges(IClassChange...)} and {@link #applyChanges(IResourceChange...)}
-     * methods, respectively.
-     *
-     * @param classChanges    An array of {@linkplain IClassChange} objects representing the changes
-     *                        to be applied to the classes. Can be empty.
-     * @param resourceChanges An array of {@linkplain IResourceChange} objects representing the changes
-     *                        to be applied to the resources. Can be empty.
-     * @deprecated This method is deprecated and will be removed in future versions.
-     *             Use {@link #applyChanges(IClassChange...)} and {@link #applyChanges(IResourceChange...)}
-     *             methods separately instead.
-     */
-    @Override
-    @Deprecated()
-    public void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges) {
-        // This will function until I fully to decide to remove this as this is deprecated.
-        applyChanges(classChanges);
-        applyChanges(resourceChanges);
-    }
-
-    /**
-     * <h6>Creates and returns an {@linkplain IOutputFile} representing the output file
-     * <p>An {@linkplain IOutputFile} is generated from the current state of {@linkplain #classes} and {@linkplain #resources}.
+     * <h6>Creates and returns an {@linkplain IOutputFile} representing the output file containing classes and resources.
+     * <p>An {@linkplain IOutputFile} is generated from the current state of {@linkplain #classes} and
+     * {@linkplain #resources}.
      * <p>This method is synchronized to ensure thread safety during the creation of the output file.
-     * It collects all class files (stored as {@linkplain ClassNode} objects) and resources stored
-     * in byte arrays from {@linkplain #classes} and {@linkplain #resources}, respectively, and
-     * compresses them into a ZIP file format.
+     * It collects all class files (stored as byte arrays) from {@linkplain #classes} and all resources (also stored as byte arrays)
+     * from {@linkplain #resources}, compresses them into a ZIP file format, and returns an {@linkplain IOutputFile} object representing
+     * the generated output.
      *
-     * @return An {@linkplain IOutputFile} object representing the generated output file.
-     *         The output file contains all classes and resources from the current state of
-     *         {@linkplain #classes} and {@linkplain #resources}.
-     * @throws RuntimeException If an error occurs during the creation of the output file,
-     *                          such as IOException during ZIP file operations.
+     * @return An {@linkplain IOutputFile} object representing the generated output file. The output file contains all
+     * classes and resources from the current state of {@linkplain #classes} and {@linkplain #resources}.
+     * @throws RuntimeException If an error occurs during the creation of the output file, such as IOException during
+     *                          ZIP file operations.
      */
     @Override
     public synchronized IOutputFile outputFile() {
@@ -298,26 +305,21 @@ public class SafeClassManager implements IClassManager {
             }
 
             @Override
-            public byte[] getFileInBytes() {
+            public byte[] getFileInBytes(int compression) {
 
                 synchronized (classes) {
                     synchronized (resources) {
                         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
                         try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
+                            zipOutputStream.setLevel(compression);
                             // Add classes to the zip output stream.
-                            for (Map.Entry<String, ClassNode> entry : classes.entrySet()) {
-                                ClassNode node = entry.getValue();
+                            for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
+                                String entryName = entry.getKey();
+                                byte[] entryData = entry.getValue();
 
-                                String entryName = node.name + ".class";
                                 zipOutputStream.putNextEntry(new ZipEntry(entryName));
-
-                                // Use ClassWriter to obtain bytecode.
-                                ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                                node.accept(classWriter);
-                                byte[] classBytes = classWriter.toByteArray();
-
-                                zipOutputStream.write(classBytes);
+                                zipOutputStream.write(entryData);
                                 zipOutputStream.closeEntry();
                             }
 
@@ -346,11 +348,11 @@ public class SafeClassManager implements IClassManager {
     /**
      * <h6>Closes the current session by clearing all stored classes, resources, and resetting the file name.
      * <p>This method ensures thread safety by synchronizing on the instance itself and on the internal
-     * collections {@linkplain #classes} and {@linkplain #resources}. It sequentially clears the
-     * contents of both collections and sets {@linkplain #fileName} to {@code null}.
+     * collections {@linkplain #classes} and {@linkplain #resources}. It sequentially clears the contents of both
+     * collections and sets {@linkplain #fileName} to {@code null}.
      * <p>It effectively releases resources held by this session and prepares the instance for potential
-     * reuse or garbage collection. This method should be called when the session is no longer needed
-     * to free up memory and ensure proper cleanup of internal state.
+     * reuse or garbage collection. This method should be called when the session is no longer needed to free up memory
+     * and ensure proper cleanup of internal state.
      */
     @Override
     public synchronized void close() {
