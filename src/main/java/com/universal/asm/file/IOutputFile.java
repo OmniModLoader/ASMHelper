@@ -22,11 +22,13 @@ public interface IOutputFile {
      */
     String getFileName();
 
+
     /**
      * Retrieves the content of the output file as a byte array.
      * The byte array represents the raw data of the file.
      *
+     * @param compression Compression ratio used in generating the File.
      * @return The file content as a byte array.
      */
-    byte[] getFileInBytes();
+    byte[] getFileInBytes(int compression);
 }
