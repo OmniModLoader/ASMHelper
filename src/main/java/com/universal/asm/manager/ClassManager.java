@@ -2,12 +2,9 @@ package com.universal.asm.manager;
 
 import com.universal.asm.changes.IClassChange;
 import com.universal.asm.changes.IResourceChange;
+import com.universal.asm.file.ClassFile;
 import com.universal.asm.file.IOutputFile;
 import com.universal.asm.file.ResourceFile;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.ClassNode;
 
 import java.io.*;
 import java.util.*;
@@ -21,36 +18,36 @@ import java.util.zip.ZipOutputStream;
  * <p>It provides methods to read a JAR file, apply changes to classes and resources,
  * and generate an {@linkplain IOutputFile} containing modified classes and resources.
  *
- * <h6>Usage</h6>
- *
+ * <p><b>Usage:</b></p>
  * <pre>{@code
- * public static void main(String[] args) {
- *     // Create instance of ClassManager.
- *     ClassManager classManager = new ClassManager();
+ *    public static void main(String[] args) {
+ *        // Creating an instance of ClassManager.
+ *        ClassManager classManager = new ClassManager();
  *
- *     // Locate a file you want to read.
- *     File file = new File("Random.jar");
+ *        classManager.readJarFile(new File("Random.jar")); // JAR you want to read.
  *
- *     classManager.readJarFile(file); // This reads and populates both the classes list and the resources map.
+ *        // Applying changes to classes.
+ *        classManager.applyChanges((IClassChange) (name, classBytes) -> { // This is the new way of applying changes.
+ *            // You have to set up your own ClassReader and ClassWriter.
+ *            // Then in this example we are accepting a class that extends ClassVisitor.
+ *            ClassReader cr = new ClassReader(classBytes);
+ *            ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
+ *            cr.accept(new TestVisitor(Opcodes.ASM9, writer), ClassReader.EXPAND_FRAMES);
+ *            // You have to change the name separately as of right now.
  *
- *     // There are multiple ways to create IClassChanges and even IResourceChanges.
- *     // Today I will be doing them the simplest way just for this JavaDoc.
- *     classManager.applyChanges(classNode -> {
- *         classNode.name = "hiiii";
- *         return classNode;
- *     });
+ *            return new ClassFile("Modified" + name, writer.toByteArray()); // Returns a ClassFile.
+ *        });
  *
- *     classManager.applyChanges((name, bytes) -> {
- *         name = "testOutput";
- *         return new ResourceFile(name, bytes);
- *     });
+ *        // Applying changes to resources
+ *        classManager.applyChanges((IResourceChange) (name, data) -> { // This is the new way of applying changes.
+ *            name = "Monkey"; // This will overwrite every entry and cause issues don't use this as code.
+ *            return new ResourceFile(name, data); // Returns a ResourceFile.
+ *        });
  *
- *     // Then create an IOutputFile.
- *     IOutputFile outputFile = classManager.outputFile();
+ *        IOutputFile outputFile = classManager.outputFile(); // This returns the Output data.
  *
- *     // Then we want to close our ClassManager.
- *     classManager.close();
- * }
+ *        byte[] outputBytes = outputFile.getFileInBytes(Deflater.DEFLATED); // This is how you set the Compression Level.
+ *    }
  * }</pre>
  *
  * @author <b><a href="https://github.com/CadenCCC">Caden</a></b>
@@ -64,7 +61,7 @@ public class ClassManager implements IClassManager {
     /**
      * Represents the classes of the JAR file inputted.
      */
-    private final ArrayList<ClassNode> classes = new ArrayList<>();
+    private final HashMap<String, byte[]> classes = new HashMap<>();
     /**
      * Represents the resources of the JAR file inputted.
      */
@@ -72,14 +69,16 @@ public class ClassManager implements IClassManager {
 
     /**
      * <h6>Reads a JAR file and populates the {@linkplain #classes} and {@linkplain #resources} collections.
-     * <p>If the JAR file contains classes (.class files), they are parsed using ASM library
-     * and stored as {@linkplain ClassNode} objects in the {@linkplain #classes}. Other resources are stored
+     * <p>If the JAR file contains classes (.class files), they are parsed using the ASM library
+     * and stored as byte arrays in the {@linkplain #classes} map. Other resources are stored
      * in the {@linkplain #resources} map.
      *
-     * @param fileInput The input File object representing the JAR file to be read.
+     * @param fileInput The input File object representing the JAR file to be read. Must not be null.
+     * @throws NullPointerException If the provided file is null.
+     * @throws RuntimeException If the provided file is not a JAR file or if an I/O error occurs.
      */
     @Override
-    public void readJarFile(File fileInput) { // If you can make this faster I ask you to please do so and then commit to my stuff... I'd also love to meet you I can't seem to make it faster.
+    public void readJarFile(File fileInput) {
         Objects.requireNonNull(fileInput, "You cannot have a NULL file as an input.");
 
         if (!fileInput.getName().endsWith(".jar")) {
@@ -93,6 +92,9 @@ public class ClassManager implements IClassManager {
 
             for (JarEntry classEntry : classEntries) {
                 String name = classEntry.getName();
+                if (name.endsWith("/")) { // Can't read folders
+                    continue;
+                }
 
                 try {
                     /* Creating streams */
@@ -102,12 +104,13 @@ public class ClassManager implements IClassManager {
 
                     byte[] value = this.toByteArray(stream, outputStream);
 
-                    /* Adding classes */
                     if (name.contains(".class")) {
-                        ClassNode node = new ClassNode(Opcodes.ASM9);
-                        ClassReader classReader = new ClassReader(value);
-                        classReader.accept(node, 0);
-                        classes.add(node);
+                        /* Adding classes */
+                        if (classes.containsKey(name)) {
+                            return;
+                        }
+
+                        classes.putIfAbsent(name, value);
                     } else {
                         /* Adding non-class entries */
                         if (resources.containsKey(name)) {
@@ -133,9 +136,10 @@ public class ClassManager implements IClassManager {
 
     /**
      * <h6>Applies changes to classes based on a provided array of {@linkplain IClassChange}.
-     * <p>This method iterates through the {@linkplain #classes} list, applying changes using the list of {@linkplain IClassChange} provided.
+     * <p>This method iterates through the {@linkplain #classes} map, applying changes using the array of {@linkplain IClassChange} implementations provided.
      *
      * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes.
+     *                     Must not be null.
      */
     @Override
     public void applyChanges(IClassChange... classChanges) {
@@ -148,28 +152,29 @@ public class ClassManager implements IClassManager {
         }
 
         /* Applying class changes and replacing them */
-        List<ClassNode> classesCopy = new ArrayList<>(classes);
-        Iterator<ClassNode> iterator = classesCopy.iterator();
-        while (iterator.hasNext()) {
-            ClassNode aClass = iterator.next();
+        HashMap<String, byte[]> tempHashMap = new HashMap<>(classes);
 
-            if (aClass == null) {
-                continue;
-            }
+        for (IClassChange change : classChanges) {
+            HashMap<String, byte[]> updatedTempHashMap = new HashMap<>();
 
-            for (IClassChange change : classChanges) {
-                if (change == null) {
-                    continue;
+            // Process each class entry.
+            tempHashMap.forEach((className, classData) -> {
+                // Apply the current change to the class data.
+                ClassFile modifiedClassFile = change.applyChange(className, classData);
+
+                if (modifiedClassFile != null) {
+                    // Update the intermediate map with the modified data.
+                    updatedTempHashMap.put(modifiedClassFile.getKey(), modifiedClassFile.getValue());
                 }
+            });
 
-                // apply class change
-                ClassNode tempNode = change.applyChanges(aClass);
-                iterator.remove();
-                if (!classes.contains(tempNode)) {
-                    classes.add(tempNode);
-                }
-            }
+            // Update the intermediate map for the next iteration.
+            tempHashMap = updatedTempHashMap;
         }
+
+        // update classes with modified values
+        classes.clear();
+        classes.putAll(tempHashMap);
 
     }
 
@@ -189,44 +194,30 @@ public class ClassManager implements IClassManager {
             return;
         }
 
-        Map<String, byte[]> modifiedResources = new HashMap<>();
-        for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
-            if (modifiedResources.containsKey(entry.getKey())) {
-                continue;
-            }
+        /* Applying resource changes and replacing them */
+        HashMap<String, byte[]> tempHashMap = new HashMap<>(resources);
 
-            for (IResourceChange resourceChange : resourceChanges) {
-                if (resourceChange == null) {
-                    continue;
+        for (IResourceChange change : resourceChanges) {
+            HashMap<String, byte[]> updatedTempHashMap = new HashMap<>();
+
+            // Process each resource entry.
+            tempHashMap.forEach((resourceName, resourceData) -> {
+                // Apply the current change to the resource data.
+                ResourceFile modifiedResourceFile = change.applyChange(resourceName, resourceData);
+
+                if (modifiedResourceFile != null) {
+                    // Update the intermediate map with the modified data.
+                    updatedTempHashMap.put(modifiedResourceFile.getKey(), modifiedResourceFile.getValue());
                 }
+            });
 
-                // apply resource change
-                ResourceFile resourceFile = resourceChange.applyChange(entry.getKey(), entry.getValue());
-                modifiedResources.put(resourceFile.getKey(), resourceFile.getValue());
-            }
+            // Update the intermediate map for the next iteration.
+            tempHashMap = updatedTempHashMap;
         }
 
-        // update resources with modified values
+        // Update resources with modified values.
         resources.clear();
-        resources.putAll(modifiedResources);
-    }
-
-    /**
-     * <h6>Applies changes to the classes and resources based on the provided arrays of changes.
-     * <p>It delegates to {@linkplain #applyChanges(IClassChange...)} and {@linkplain #applyChanges(IResourceChange...)} methods to process the classes and resources
-     *
-     * @param classChanges   Array of {@linkplain IClassChange} implementations for modifying classes.
-     * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
-     * @deprecated This method is deprecated and will be removed in a future version.
-     *             Use {@link #applyChanges(IClassChange...)} and {@link #applyChanges(IResourceChange...)}
-     *             methods separately instead.
-     */
-    @Override
-    @Deprecated()
-    public void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges) {
-        // This will function until I fully to decide to remove this as this is deprecated.
-        applyChanges(classChanges);
-        applyChanges(resourceChanges);
+        resources.putAll(tempHashMap);
     }
 
     /**
@@ -245,21 +236,18 @@ public class ClassManager implements IClassManager {
             }
 
             @Override
-            public byte[] getFileInBytes() {
+            public byte[] getFileInBytes(int compression) {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
                 try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
+                    zipOutputStream.setLevel(compression);
                     // add classes to the zip output stream
-                    for (ClassNode classNode : classes) {
-                        String entryName = classNode.name + ".class";
+                    for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
+                        String entryName = entry.getKey(); // todo add check to make sure it ends in .class
+                        byte[] entryData = entry.getValue();
+
                         zipOutputStream.putNextEntry(new ZipEntry(entryName));
-
-                        // use ClassWriter to obtain bytecode
-                        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                        classNode.accept(classWriter);
-                        byte[] classBytes = classWriter.toByteArray();
-
-                        zipOutputStream.write(classBytes);
+                        zipOutputStream.write(entryData);
                         zipOutputStream.closeEntry();
                     }
 
@@ -285,7 +273,7 @@ public class ClassManager implements IClassManager {
 
     /**
      * <h6>Closes resources and clears internal collections.
-     * <p>It resets {@linkplain #fileName}, clears {@linkplain #classes} list, and clears {@linkplain #resources} map.
+     * <p>It resets {@linkplain #fileName}, clears {@linkplain #classes} map, and clears {@linkplain #resources} map.
      */
     @Override
     public void close() {
