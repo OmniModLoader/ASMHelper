@@ -1,7 +1,6 @@
 package com.universal.asm.changes;
 
 import com.universal.asm.file.ClassFile;
-import org.objectweb.asm.tree.ClassNode;
 
 /**
  * <h6>Functional interface for applying changes to a class file represented as byte data.
