@@ -1,3 +1,10 @@
++---------------------2.1.3---------------------+
+- Fixed thread safe ClassManager.
+- Added ClassFile.
+- Updated examples.
+- Removed Deprecated content.
+- Support for you to choose what compression level you want.
+
 +---------------------1.1.3---------------------+
 - Made a thread safe ClassManager.
 - Fixed `fileName` being null because I did not set it.
