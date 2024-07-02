@@ -2,14 +2,17 @@ package me.examples;
 
 import com.universal.asm.changes.IClassChange;
 import com.universal.asm.changes.IResourceChange;
+import com.universal.asm.file.ClassFile;
 import com.universal.asm.file.IOutputFile;
 import com.universal.asm.file.ResourceFile;
 import com.universal.asm.manager.ClassManager;
 import com.universal.asm.manager.IClassManager;
-import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 
 import java.io.File;
-import java.util.Random;
+import java.util.zip.Deflater;
 
 public class ExampleFile {
 
@@ -17,10 +20,16 @@ public class ExampleFile {
     public static class RenameChange implements IClassChange {
 
         @Override
-        public ClassNode applyChanges(ClassNode classNode) {
-            // Implementing a remapper here for this change would be the actual usage but for this example we will be changing the name to "hii".
-            classNode.name = "Hiiiiii" + new Random().nextInt(Integer.MAX_VALUE); // If the class name is the same it will be overwritten over and over.
-            return classNode; // You need to return the classNode you changed
+        public ClassFile applyChange(String name, byte[] classBytes) { // New way of applying changes
+            // You have to set up your own ClassReader and ClassWriter.
+            // Then in this example we are accepting a class that extends ClassVisitor.
+            ClassReader cr = new ClassReader(classBytes);
+            ClassWriter writer = new ClassWriter(cr, ClassWriter. COMPUTE_FRAMES);
+            cr.accept(new TestVisitor(Opcodes.ASM9, writer), ClassReader. EXPAND_FRAMES);
+
+            // You need to change the name separately.
+
+            return new ClassFile(name, writer.toByteArray()); // You need to return a ClassFile
         }
     }
 
@@ -51,15 +60,6 @@ public class ExampleFile {
 
             classManager.applyChanges(new ManifestChange()); // Apply the IResourceChange in here. You can input as many as you want.
 
-            // There are multiple ways of using `applyChanges`, I will show you another way you can do it.
-
-            /* Another Way */
-            IClassChange[] classChanges = new IClassChange[] {new RenameChange()}; // A list of IClassChanges
-
-            IResourceChange[] resourceChanges = new IResourceChange[] {new ManifestChange()}; // A list of IResourceChanges
-
-            classManager.applyChanges(classChanges, resourceChanges);
-
         }
     }
 
@@ -76,6 +76,8 @@ public class ExampleFile {
 
             // This is the only way you can output file data.
             IOutputFile outputFile = classManager.outputFile();
+
+            byte[] fileInBytes = outputFile.getFileInBytes(Deflater.DEFLATED); // You can customize your own compression level like this.
         }
     }
 
@@ -95,11 +97,6 @@ public class ExampleFile {
         @Override
         public void applyChanges(IResourceChange... resourceChanges) {
             // Apply Resource Changes here.
-        }
-
-        @Override
-        public void applyChanges(IClassChange[] classChanges, IResourceChange[] resourceChanges) {
-            // Call both `applyChanges` functions or create your own logic here.
         }
 
         @Override
