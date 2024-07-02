@@ -316,6 +316,10 @@ public class SafeClassManager implements IClassManager {
                             // Add classes to the zip output stream.
                             for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
                                 String entryName = entry.getKey();
+                                if (!entryName.contains(".class")) {
+                                    entryName = entryName.concat(".class");
+                                }
+
                                 byte[] entryData = entry.getValue();
 
                                 zipOutputStream.putNextEntry(new ZipEntry(entryName));

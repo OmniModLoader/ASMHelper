@@ -243,7 +243,11 @@ public class ClassManager implements IClassManager {
                     zipOutputStream.setLevel(compression);
                     // add classes to the zip output stream
                     for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
-                        String entryName = entry.getKey(); // todo add check to make sure it ends in .class
+                        String entryName = entry.getKey();
+                        if (!entryName.contains(".class")) {
+                            entryName = entryName.concat(".class");
+                        }
+
                         byte[] entryData = entry.getValue();
 
                         zipOutputStream.putNextEntry(new ZipEntry(entryName));
