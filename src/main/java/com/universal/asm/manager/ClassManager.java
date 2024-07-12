@@ -2,6 +2,7 @@ package com.universal.asm.manager;
 
 import com.universal.asm.changes.IClassChange;
 import com.universal.asm.changes.IResourceChange;
+import com.universal.asm.common.ByteUtil;
 import com.universal.asm.file.ClassFile;
 import com.universal.asm.file.IOutputFile;
 import com.universal.asm.file.ResourceFile;
@@ -102,7 +103,7 @@ public class ClassManager implements IClassManager {
                     InputStream stream = jar.getInputStream(classEntry);
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-                    byte[] value = this.toByteArray(stream, outputStream);
+                    byte[] value = ByteUtil.toByteArray(stream, outputStream);
 
                     if (name.contains(".class")) {
                         /* Adding classes */
@@ -232,7 +233,7 @@ public class ClassManager implements IClassManager {
         return new IOutputFile() {
             @Override
             public String getFileName() {
-                return ClassManager.this.getFileName();
+                return fileName;
             }
 
             @Override
@@ -284,24 +285,5 @@ public class ClassManager implements IClassManager {
         this.fileName = null;
         classes.clear();
         resources.clear();
-    }
-
-
-    /**
-     * <h6>Going to move to a "common" project for the Universal Loader
-     */
-    private byte[] toByteArray(InputStream inputStream, ByteArrayOutputStream byteArrayOutputStream) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, bytesRead);
-        }
-
-        return byteArrayOutputStream.toByteArray();
-    }
-
-    public String getFileName() {
-        return fileName;
     }
 }

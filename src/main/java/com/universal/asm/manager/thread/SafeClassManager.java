@@ -2,6 +2,7 @@ package com.universal.asm.manager.thread;
 
 import com.universal.asm.changes.IClassChange;
 import com.universal.asm.changes.IResourceChange;
+import com.universal.asm.common.ByteUtil;
 import com.universal.asm.file.ClassFile;
 import com.universal.asm.file.IOutputFile;
 import com.universal.asm.file.ResourceFile;
@@ -143,7 +144,7 @@ public class SafeClassManager implements IClassManager {
                     InputStream inputStream = jarFile.getInputStream(jarEntry);
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-                    byte[] value = this.toByteArray(inputStream, byteArrayOutputStream);
+                    byte[] value = ByteUtil.toByteArray(inputStream, byteArrayOutputStream);
 
                     /* Adding classes */
                     if (entryName.contains(".class")) {
@@ -196,29 +197,22 @@ public class SafeClassManager implements IClassManager {
             return;
         }
 
-        // Use a ConcurrentHashMap to store intermediate modified data.
         ConcurrentHashMap<String, byte[]> tempHashMap = new ConcurrentHashMap<>(classes);
 
-        // Apply changes sequentially.
         for (IClassChange change : classChanges) {
             ConcurrentHashMap<String, byte[]> updatedTempHashMap = new ConcurrentHashMap<>();
 
-            // Process each class entry.
             tempHashMap.forEach((className, classData) -> {
-                // Apply the current change to the class data.
                 ClassFile modifiedClassFile = change.applyChange(className, classData);
 
                 if (modifiedClassFile != null) {
-                    // Update the intermediate map with the modified data.
                     updatedTempHashMap.put(modifiedClassFile.getKey(), modifiedClassFile.getValue());
                 }
             });
 
-            // Update the intermediate map for the next iteration.
             tempHashMap = updatedTempHashMap;
         }
 
-        // Replace the original classes map with the final modified data.
         synchronized (classes) {
             classes.clear();
             classes.putAll(tempHashMap);
@@ -252,30 +246,23 @@ public class SafeClassManager implements IClassManager {
             return;
         }
 
-        // Use a ConcurrentHashMap to store intermediate modified data.
         ConcurrentHashMap<String, byte[]> tempHashMap = new ConcurrentHashMap<>(resources);
 
-        // Apply changes sequentially.
         for (IResourceChange change : resourceChanges) {
             ConcurrentHashMap<String, byte[]> updatedTempHashMap = new ConcurrentHashMap<>();
 
-            // Process each resource entry.
             tempHashMap.forEach((resourceName, resourceData) -> {
 
-                // Apply the current change to the resource data.
                 ResourceFile modifiedResourceFile = change.applyChange(resourceName, resourceData);
 
                 if (modifiedResourceFile != null) {
-                    // Update the intermediate map with the modified data.
                     updatedTempHashMap.put(modifiedResourceFile.getKey(), modifiedResourceFile.getValue());
                 }
             });
 
-            // Update the intermediate map for the next iteration.
             tempHashMap = updatedTempHashMap;
         }
 
-        // Replace the original resources map with the final modified data.
         synchronized (resources) {
             resources.clear();
             resources.putAll(tempHashMap);
@@ -368,16 +355,5 @@ public class SafeClassManager implements IClassManager {
             this.resources.clear();
         }
         this.fileName = null;
-    }
-
-    private byte[] toByteArray(InputStream inputStream, ByteArrayOutputStream byteArrayOutputStream) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, bytesRead);
-        }
-
-        return byteArrayOutputStream.toByteArray();
     }
 }
