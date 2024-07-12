@@ -158,22 +158,17 @@ public class ClassManager implements IClassManager {
         for (IClassChange change : classChanges) {
             HashMap<String, byte[]> updatedTempHashMap = new HashMap<>();
 
-            // Process each class entry.
             tempHashMap.forEach((className, classData) -> {
-                // Apply the current change to the class data.
                 ClassFile modifiedClassFile = change.applyChange(className, classData);
 
                 if (modifiedClassFile != null) {
-                    // Update the intermediate map with the modified data.
                     updatedTempHashMap.put(modifiedClassFile.getKey(), modifiedClassFile.getValue());
                 }
             });
 
-            // Update the intermediate map for the next iteration.
             tempHashMap = updatedTempHashMap;
         }
 
-        // update classes with modified values
         classes.clear();
         classes.putAll(tempHashMap);
 
@@ -201,22 +196,17 @@ public class ClassManager implements IClassManager {
         for (IResourceChange change : resourceChanges) {
             HashMap<String, byte[]> updatedTempHashMap = new HashMap<>();
 
-            // Process each resource entry.
             tempHashMap.forEach((resourceName, resourceData) -> {
-                // Apply the current change to the resource data.
                 ResourceFile modifiedResourceFile = change.applyChange(resourceName, resourceData);
 
                 if (modifiedResourceFile != null) {
-                    // Update the intermediate map with the modified data.
                     updatedTempHashMap.put(modifiedResourceFile.getKey(), modifiedResourceFile.getValue());
                 }
             });
 
-            // Update the intermediate map for the next iteration.
             tempHashMap = updatedTempHashMap;
         }
 
-        // Update resources with modified values.
         resources.clear();
         resources.putAll(tempHashMap);
     }
