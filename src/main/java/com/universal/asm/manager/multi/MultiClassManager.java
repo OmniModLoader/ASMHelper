@@ -284,7 +284,7 @@ public class MultiClassManager {
 
 
                 } catch (IOException e) {
-                    throw new RuntimeException("Failed to create Output File `%s`".formatted(fileName));
+                    throw new RuntimeException("Failed to create Output File" + fileName);
                 }
 
                 return byteArrayOutputStream.toByteArray();
