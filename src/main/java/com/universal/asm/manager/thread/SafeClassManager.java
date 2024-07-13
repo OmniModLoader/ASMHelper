@@ -118,7 +118,7 @@ public class SafeClassManager implements IClassManager {
      */
     @Override
     public synchronized void readJarFile(File fileInput) {
-        Objects.requireNonNull(fileInput);
+        Objects.requireNonNull(fileInput, "You cannot have a NULL file as an input.");
 
         // We only use contains because it is proven to be faster seen here:
         // https://stackoverflow.com/questions/28208793/in-java-which-is-faster-string-containssome-text-or-regex-that-looks-for
