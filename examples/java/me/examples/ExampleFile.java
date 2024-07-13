@@ -7,14 +7,81 @@ import com.universal.asm.file.IOutputFile;
 import com.universal.asm.file.ResourceFile;
 import com.universal.asm.manager.ClassManager;
 import com.universal.asm.manager.IClassManager;
+import com.universal.asm.manager.multi.MultiClassManager;
+import com.universal.asm.merger.JarMerger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.jar.JarFile;
 import java.util.zip.Deflater;
 
 public class ExampleFile {
+
+    /* MultiClassManager */
+
+    public static class MultiClassManagerExample {
+        public static void main(String[] args) {
+            MultiClassManager classManager = new MultiClassManager(); // Creating an instance.
+
+            // Remember performance will be hindered if JARs are big or if they have a lot of files.
+            // You can add as many jar files here.
+            classManager.readJarFiles(new File("Random.jar"), new File("Random1.jar"), new File("Random2.jar"));
+
+            classManager.applyChanges((IClassChange) (name, classBytes) -> { // This will apply changes to all loaded JarFiles.
+                name = "RandomName1231232131";
+                return new ClassFile(name, classBytes);
+            });
+
+            // You can target the changes by calling this method.
+            classManager.applyTargetedChanges("Random.jar", (IClassChange) (name, classBytes) -> { // You NEED the absolute name because it only saves in absolute names.
+                name = "This_Random_Jar";
+                return new ClassFile(name, classBytes);
+            });
+
+            // For resources, you can do these.
+            classManager.applyChanges((IResourceChange) (name, resourceData) -> {
+                name = "Testing All data.json";
+                return new ResourceFile(name, resourceData);
+            });
+
+            classManager.applyTargetedChanges("Random1.jar", (IResourceChange) (name, resourceData) -> {
+                name = "Random1 Test.png";
+                return new ResourceFile(name, resourceData);
+            });
+
+            // When creating IResourceChange, or an IClassChange it is best to put them in a separate class and just implement them.
+
+            IOutputFile[] outputs = classManager.createOutputs(); // This gives you access to all the ClassData.
+
+            // For example here I will show you how to access one.
+            outputs[0].getFileInBytes(Deflater.DEFLATED); // This is how you get the File in bytes, Deflater is the compression level, you choose what you want.
+
+            IOutputFile targetedOutputFile = classManager.createTargetedOutputFile("Random.jar"); // This is how you create a targeted Output file, so you only output the file you want.
+
+            classManager.close(); // It is best practice to close a MultiClassManager.
+        }
+    }
+
+    /* Jar Merger */
+
+    public static class JarMergerExample {
+        public static void main(String[] args) throws IOException {
+            JarMerger jarMerger = new JarMerger("MergedJarName.jar"); // This is what the JAR is going to be outputted too.
+
+            jarMerger.mergeJars(new JarFile("Random.jar"), new JarFile("Random1.jar")); // You need more than one JARs to merge of course.
+
+            IOutputFile outputFile = jarMerger.outputFile(); // This creates a IOutputFile to get the file in bytes.
+
+            byte[] fileInBytes = outputFile.getFileInBytes(Deflater.DEFLATED); // This is how you get the File in bytes, Deflator is the compression level which you choose.
+
+            jarMerger.close(); // It is best practice to close a JarMerger, so it doesn't leak classes or resources.
+        }
+    }
+
+    /* ClassManager & SafeClassManager */
 
     /* Implementing IClassChange */
     public static class RenameChange implements IClassChange {
@@ -24,8 +91,8 @@ public class ExampleFile {
             // You have to set up your own ClassReader and ClassWriter.
             // Then in this example we are accepting a class that extends ClassVisitor.
             ClassReader cr = new ClassReader(classBytes);
-            ClassWriter writer = new ClassWriter(cr, ClassWriter. COMPUTE_FRAMES);
-            cr.accept(new TestVisitor(Opcodes.ASM9, writer), ClassReader. EXPAND_FRAMES);
+            ClassWriter writer = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES);
+            cr.accept(new TestVisitor(Opcodes.ASM9, writer), ClassReader.EXPAND_FRAMES);
 
             // You need to change the name separately.
 
