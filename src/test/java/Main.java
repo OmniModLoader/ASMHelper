@@ -17,18 +17,16 @@ import java.util.zip.Deflater;
  * @since 1.1.3
  */
 public class Main {
+    private static final List<String> speedOptions = Arrays.asList("sp", "speed", "speedTest", "t", "test");
+    private static final List<String> safeClassLoader = Arrays.asList("T", "thread", "S", "safeloader", "SafeClassLoader");
+    private static final List<String> classLoader = Arrays.asList("C", "CL", "classloader", "U", "unsafe");
+    private static final List<String> mergeOptions = Arrays.asList("mj", "merge", "mergeJar", "mergeJars");
 
     public static void main(String[] args) {
         if (args.length < 2) {
             printUsage();
             System.exit(1);
         }
-
-        // Options.
-        List<String> speedOptions = Arrays.asList("sp", "speed", "speedTest", "t", "test");
-        List<String> safeClassLoader = Arrays.asList("T", "thread", "S", "safeloader", "SafeClassLoader");
-        List<String> classLoader = Arrays.asList("C", "CL", "classloader", "U", "unsafe");
-        List<String> mergeOptions = Arrays.asList("mj", "merge", "mergeJar", "mergeJars");
 
         // Parse arguments.
         String option = args[0].substring(1);
