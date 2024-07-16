@@ -17,7 +17,7 @@ public class ExceptionsClassManagerTest {
     @Test
     public void testMultiClassManagerNull() {
         MultiClassManager multiClassManager = new MultiClassManager();
-        Assertions.assertThrows(NullPointerException.class, () -> multiClassManager.readJarFiles(null));
+        Assertions.assertThrows(NullPointerException.class, () -> multiClassManager.readJarFiles((File[]) null));
     }
 
     @Test
