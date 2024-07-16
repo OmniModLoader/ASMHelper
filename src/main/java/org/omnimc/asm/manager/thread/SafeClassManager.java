@@ -1,19 +1,22 @@
-package com.universal.asm.manager.thread;
+package org.omnimc.asm.manager.thread;
 
-import com.universal.asm.changes.IClassChange;
-import com.universal.asm.changes.IResourceChange;
-import com.universal.asm.common.ByteUtil;
-import com.universal.asm.file.ClassFile;
-import com.universal.asm.file.IOutputFile;
-import com.universal.asm.file.ResourceFile;
-import com.universal.asm.manager.ClassManager;
-import com.universal.asm.manager.IClassManager;
+import org.omnimc.asm.changes.IClassChange;
+import org.omnimc.asm.changes.IResourceChange;
+import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.file.ClassFile;
+import org.omnimc.asm.file.IOutputFile;
+import org.omnimc.asm.file.ResourceFile;
+import org.omnimc.asm.manager.ClassManager;
+import org.omnimc.asm.manager.IClassManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -184,6 +187,7 @@ public class SafeClassManager implements IClassManager {
      *   <li>It uses a {@linkplain ConcurrentHashMap} to store intermediate modified data, allowing safe concurrent updates.</li>
      *   <li>Sequential processing of class changes further ensures data consistency and avoids race conditions.</li>
      * </ul>
+     *
      * @param classChanges One or more {@linkplain IClassChange} objects representing the changes to be applied to the
      *                     classes.
      */
@@ -270,13 +274,14 @@ public class SafeClassManager implements IClassManager {
     }
 
     /**
-     * <h6>Creates and returns an {@linkplain IOutputFile} representing the output file containing classes and resources.
+     * <h6>Creates and returns an {@linkplain IOutputFile} representing the output file containing classes and
+     * resources.
      * <p>An {@linkplain IOutputFile} is generated from the current state of {@linkplain #classes} and
      * {@linkplain #resources}.
      * <p>This method is synchronized to ensure thread safety during the creation of the output file.
-     * It collects all class files (stored as byte arrays) from {@linkplain #classes} and all resources (also stored as byte arrays)
-     * from {@linkplain #resources}, compresses them into a ZIP file format, and returns an {@linkplain IOutputFile} object representing
-     * the generated output.
+     * It collects all class files (stored as byte arrays) from {@linkplain #classes} and all resources (also stored as
+     * byte arrays) from {@linkplain #resources}, compresses them into a ZIP file format, and returns an
+     * {@linkplain IOutputFile} object representing the generated output.
      *
      * @return An {@linkplain IOutputFile} object representing the generated output file. The output file contains all
      * classes and resources from the current state of {@linkplain #classes} and {@linkplain #resources}.
@@ -284,7 +289,7 @@ public class SafeClassManager implements IClassManager {
      *                          ZIP file operations.
      */
     @Override
-    public synchronized IOutputFile outputFile() {
+    public IOutputFile outputFile() {
         return new IOutputFile() {
             @Override
             public String getFileName() {
@@ -294,43 +299,44 @@ public class SafeClassManager implements IClassManager {
             @Override
             public byte[] getFileInBytes(int compression) {
 
-                synchronized (classes) {
-                    synchronized (resources) {
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-                        try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
-                            zipOutputStream.setLevel(compression);
-                            // Add classes to the zip output stream.
-                            for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
-                                String entryName = entry.getKey();
-                                if (!entryName.contains(".class")) {
-                                    entryName = entryName.concat(".class");
-                                }
+                try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
+                    zipOutputStream.setLevel(compression);
 
-                                byte[] entryData = entry.getValue();
-
-                                zipOutputStream.putNextEntry(new ZipEntry(entryName));
-                                zipOutputStream.write(entryData);
-                                zipOutputStream.closeEntry();
+                    synchronized (classes) {
+                        // Add classes to the zip output stream.
+                        for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
+                            String entryName = entry.getKey();
+                            if (!entryName.contains(".class")) {
+                                entryName = entryName.concat(".class");
                             }
 
-                            // Add resources to the zip output stream.
-                            for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
-                                if (entry.getValue() == null) {
-                                    continue;
-                                }
+                            byte[] entryData = entry.getValue();
 
-                                zipOutputStream.putNextEntry(new ZipEntry(entry.getKey()));
-                                zipOutputStream.write(entry.getValue());
-                                zipOutputStream.closeEntry();
-                            }
-                        } catch (IOException e) {
-                            throw new RuntimeException("Error creating output file", e);
+                            zipOutputStream.putNextEntry(new ZipEntry(entryName));
+                            zipOutputStream.write(entryData);
+                            zipOutputStream.closeEntry();
                         }
-
-                        return byteArrayOutputStream.toByteArray();
                     }
+
+                    synchronized (resources) {
+                        // Add resources to the zip output stream.
+                        for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
+                            if (entry.getValue() == null) {
+                                continue;
+                            }
+
+                            zipOutputStream.putNextEntry(new ZipEntry(entry.getKey()));
+                            zipOutputStream.write(entry.getValue());
+                            zipOutputStream.closeEntry();
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException("Error creating output file", e);
                 }
+
+                return byteArrayOutputStream.toByteArray();
 
             }
         };

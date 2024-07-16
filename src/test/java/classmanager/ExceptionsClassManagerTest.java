@@ -1,8 +1,8 @@
 package classmanager;
 
-import com.universal.asm.manager.ClassManager;
-import com.universal.asm.manager.multi.MultiClassManager;
-import com.universal.asm.manager.thread.SafeClassManager;
+import org.omnimc.asm.manager.ClassManager;
+import org.omnimc.asm.manager.multi.MultiClassManager;
+import org.omnimc.asm.manager.thread.SafeClassManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

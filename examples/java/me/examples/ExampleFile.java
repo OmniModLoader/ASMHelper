@@ -1,14 +1,14 @@
 package me.examples;
 
-import com.universal.asm.changes.IClassChange;
-import com.universal.asm.changes.IResourceChange;
-import com.universal.asm.file.ClassFile;
-import com.universal.asm.file.IOutputFile;
-import com.universal.asm.file.ResourceFile;
-import com.universal.asm.manager.ClassManager;
-import com.universal.asm.manager.IClassManager;
-import com.universal.asm.manager.multi.MultiClassManager;
-import com.universal.asm.merger.JarMerger;
+import org.omnimc.asm.changes.IClassChange;
+import org.omnimc.asm.changes.IResourceChange;
+import org.omnimc.asm.file.ClassFile;
+import org.omnimc.asm.file.IOutputFile;
+import org.omnimc.asm.file.ResourceFile;
+import org.omnimc.asm.manager.ClassManager;
+import org.omnimc.asm.manager.IClassManager;
+import org.omnimc.asm.manager.multi.MultiClassManager;
+import org.omnimc.asm.merger.JarMerger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;

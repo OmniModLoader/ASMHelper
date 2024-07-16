@@ -1,11 +1,11 @@
-package com.universal.asm.manager;
+package org.omnimc.asm.manager;
 
-import com.universal.asm.changes.IClassChange;
-import com.universal.asm.changes.IResourceChange;
-import com.universal.asm.common.ByteUtil;
-import com.universal.asm.file.ClassFile;
-import com.universal.asm.file.IOutputFile;
-import com.universal.asm.file.ResourceFile;
+import org.omnimc.asm.changes.IClassChange;
+import org.omnimc.asm.changes.IResourceChange;
+import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.file.ClassFile;
+import org.omnimc.asm.file.IOutputFile;
+import org.omnimc.asm.file.ResourceFile;
 
 import java.io.*;
 import java.util.*;

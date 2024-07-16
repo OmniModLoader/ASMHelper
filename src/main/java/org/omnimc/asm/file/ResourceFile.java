@@ -1,7 +1,7 @@
-package com.universal.asm.file;
+package org.omnimc.asm.file;
 
-import com.universal.asm.changes.IResourceChange;
-import com.universal.asm.manager.IClassManager;
+import org.omnimc.asm.changes.IResourceChange;
+import org.omnimc.asm.manager.IClassManager;
 
 import java.util.Map;
 

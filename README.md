@@ -1,8 +1,7 @@
 # ASM Helper
 
-ASM Helper is a library designed to facilitate the modification of JAR files, simplifying the process of making changes
-to ModFiles within the Universal framework.
-This library is versatile and can be utilized in various contexts beyond Universal.
+ASM Helper is a library designed to facilitate the modification of JAR files, simplifying the process of making changes to ModFiles within the OmniMC framework.
+This library is versatile and can be utilized in various contexts beyond OmniMC.
 
 # Examples
 
@@ -27,9 +26,9 @@ This library is versatile and can be utilized in various contexts beyond Univers
 
 ```xml
 <dependency>
-    <groupId>com.github.Universal-ModLoader</groupId>
+    <groupId>com.github.OmniMC</groupId>
     <artifactId>ASMHelper</artifactId>
-    <version>2.2.4</version>
+    <version>2.2.5</version>
 </dependency>
 ```
 
@@ -49,7 +48,7 @@ repositories {
 
 ```gradle
 dependencies {
-    implementation 'com.github.Universal-ModLoader:ASMHelper:2.2.4'
+    implementation 'com.github.OmniMC:ASMHelper:2.2.5'
 }
 ```
 

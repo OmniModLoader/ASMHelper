@@ -1,6 +1,6 @@
 package merger;
 
-import com.universal.asm.merger.JarMerger;
+import org.omnimc.asm.merger.JarMerger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

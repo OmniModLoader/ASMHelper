@@ -1,7 +1,7 @@
-package com.universal.asm.merger;
+package org.omnimc.asm.merger;
 
-import com.universal.asm.common.ByteUtil;
-import com.universal.asm.file.IOutputFile;
+import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.file.IOutputFile;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 

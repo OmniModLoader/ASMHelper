@@ -1,6 +1,6 @@
-package com.universal.asm.changes;
+package org.omnimc.asm.changes;
 
-import com.universal.asm.file.ClassFile;
+import org.omnimc.asm.file.ClassFile;
 
 /**
  * <h6>Functional interface for applying changes to a class file represented as byte data.

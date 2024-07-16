@@ -25,7 +25,7 @@ jar {
         // This value is supposed to change after every major version.
         // More info on this is not really an identifier that is the only way of verifying approved Jars
         // That have higher load order.
-        attributes "Universal-Authenticated": authenticationKey
+        attributes "OmniMC-Authenticated": authenticationKey
     }
 }
 
@@ -47,7 +47,7 @@ task fatJar(type: Jar) {
     from runtimeDependencies
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Exclude duplicates explicitly
     manifest {
-        attributes "Universal-Authenticated": authenticationKey
+        attributes "OmniMC-Authenticated": authenticationKey
     }
     archiveFileName = "ASMHelper-" + version + "-all.jar"
 

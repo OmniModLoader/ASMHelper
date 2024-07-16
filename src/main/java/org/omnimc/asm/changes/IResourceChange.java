@@ -1,6 +1,6 @@
-package com.universal.asm.changes;
+package org.omnimc.asm.changes;
 
-import com.universal.asm.file.ResourceFile;
+import org.omnimc.asm.file.ResourceFile;
 
 /**
  * <h6>Functional interface for applying changes to a resource identified by its name and data.

@@ -1,4 +1,4 @@
-package com.universal.asm.file;
+package org.omnimc.asm.file;
 
 import java.util.Map;
 

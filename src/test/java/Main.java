@@ -1,7 +1,7 @@
-import com.universal.asm.file.IOutputFile;
-import com.universal.asm.manager.ClassManager;
-import com.universal.asm.manager.thread.SafeClassManager;
-import com.universal.asm.merger.JarMerger;
+import org.omnimc.asm.file.IOutputFile;
+import org.omnimc.asm.manager.ClassManager;
+import org.omnimc.asm.manager.thread.SafeClassManager;
+import org.omnimc.asm.merger.JarMerger;
 
 import java.io.File;
 import java.io.FileOutputStream;

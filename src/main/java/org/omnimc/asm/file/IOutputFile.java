@@ -1,4 +1,4 @@
-package com.universal.asm.file;
+package org.omnimc.asm.file;
 
 /**
  * <h6>The {@linkplain IOutputFile} interface represents an output file.

@@ -1,4 +1,4 @@
-package com.universal.asm.common;
+package org.omnimc.asm.common;
 
 import org.jetbrains.annotations.ApiStatus;
 
