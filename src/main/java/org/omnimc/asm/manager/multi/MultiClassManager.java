@@ -310,6 +310,14 @@ public class MultiClassManager {
         return outputFiles.toArray(new IOutputFile[0]);
     }
 
+    public ConcurrentHashMap<String, ConcurrentHashMap<String, byte[]>> getClasses() {
+        return new ConcurrentHashMap<>(classes);
+    }
+
+    public ConcurrentHashMap<String, ConcurrentHashMap<String, byte[]>> getResources() {
+        return new ConcurrentHashMap<>(resources);
+    }
+
     /**
      * <h6>Removes entries (classes and resources) associated with a specific JAR file from internal collections.
      *

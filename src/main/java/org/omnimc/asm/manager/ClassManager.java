@@ -265,6 +265,13 @@ public class ClassManager implements IClassManager {
         };
     }
 
+    public HashMap<String, byte[]> getClasses() {
+        return new HashMap<>(classes);
+    }
+
+    public HashMap<String, byte[]> getResources() {
+        return new HashMap<>(resources);
+    }
 
     /**
      * <h6>Closes resources and clears internal collections.

@@ -342,6 +342,14 @@ public class SafeClassManager implements IClassManager {
         };
     }
 
+    public ConcurrentHashMap<String, byte[]> getClasses() {
+        return new ConcurrentHashMap<>(classes);
+    }
+
+    public ConcurrentHashMap<String, byte[]> getResources() {
+        return new ConcurrentHashMap<>(resources);
+    }
+
     /**
      * <h6>Closes the current session by clearing all stored classes, resources, and resetting the file name.
      * <p>This method ensures thread safety by synchronizing on the instance itself and on the internal
