@@ -28,7 +28,7 @@ This library is versatile and can be utilized in various contexts beyond OmniMC.
 <dependency>
     <groupId>com.github.OmniModLoader</groupId>
     <artifactId>ASMHelper</artifactId>
-    <version>2.2.5</version>
+    <version>2.2.6</version>
 </dependency>
 ```
 
@@ -48,7 +48,7 @@ repositories {
 
 ```gradle
 dependencies {
-    implementation 'com.github.OmniModLoader:ASMHelper:2.2.5'
+    implementation 'com.github.OmniModLoader:ASMHelper:2.2.6'
 }
 ```
 
