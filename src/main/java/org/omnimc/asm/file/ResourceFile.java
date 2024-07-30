@@ -27,7 +27,9 @@ package org.omnimc.asm.file;
 import org.omnimc.asm.changes.IResourceChange;
 import org.omnimc.asm.manager.IClassManager;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <h6>Represents a resource file entry for managing binary data in a key-value format.
@@ -90,5 +92,26 @@ public class ResourceFile implements Map.Entry<String, byte[]> {
     public byte[] setValue(byte[] value) {
         this.value = value;
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return "ResourceFile{" +
+                "key='" + key + '\'' +
+                ", value=" + Arrays.toString(value) +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ResourceFile resourceFile = (ResourceFile) o;
+        return Objects.equals(key, resourceFile.getKey()) && Objects.deepEquals(value, resourceFile.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, Arrays.hashCode(value));
     }
 }

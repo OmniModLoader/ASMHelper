@@ -307,4 +307,26 @@ public class ClassManager implements IClassManager {
         classes.clear();
         resources.clear();
     }
+
+    @Override
+    public String toString() {
+        return "ClassManager{" +
+                "fileName='" + fileName + '\'' +
+                ", classes=" + classes +
+                ", resources=" + resources +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClassManager that = (ClassManager) o;
+        return Objects.equals(fileName, that.fileName) && Objects.equals(getClasses(), that.getClasses()) && Objects.equals(getResources(), that.getResources());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileName, getClasses(), getResources());
+    }
 }

@@ -207,4 +207,26 @@ public class JarMerger {
             mainAttributes.remove(MAIN_CLASS);
         }
     }
+
+    @Override
+    public String toString() {
+        return "JarMerger{" +
+                "fileInputs=" + fileInputs +
+                ", mergedJarName='" + mergedJarName + '\'' +
+                ", chosenManifestAttr=" + chosenManifestAttr +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        JarMerger jarMerger = (JarMerger) o;
+        return Objects.equals(fileInputs, jarMerger.fileInputs) && Objects.equals(mergedJarName, jarMerger.mergedJarName) && Objects.equals(chosenManifestAttr, jarMerger.chosenManifestAttr);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileInputs, mergedJarName, chosenManifestAttr);
+    }
 }

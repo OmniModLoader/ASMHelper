@@ -366,4 +366,26 @@ public class MultiClassManager {
         classes.clear();
         resources.clear();
     }
+
+    @Override
+    public String toString() {
+        return "MultiClassManager{" +
+                "fileNames=" + fileNames +
+                ", classes=" + classes +
+                ", resources=" + resources +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MultiClassManager that = (MultiClassManager) o;
+        return Objects.equals(fileNames, that.fileNames) && Objects.equals(getClasses(), that.getClasses()) && Objects.equals(getResources(), that.getResources());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileNames, getClasses(), getResources());
+    }
 }

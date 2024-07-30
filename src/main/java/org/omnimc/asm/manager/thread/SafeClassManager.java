@@ -394,4 +394,26 @@ public class SafeClassManager implements IClassManager {
         }
         this.fileName = null;
     }
+
+    @Override
+    public String toString() {
+        return "SafeClassManager{" +
+                "fileName='" + fileName + '\'' +
+                ", classes=" + classes +
+                ", resources=" + resources +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SafeClassManager that = (SafeClassManager) o;
+        return Objects.equals(fileName, that.fileName) && Objects.equals(getClasses(), that.getClasses()) && Objects.equals(getResources(), that.getResources());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileName, getClasses(), getResources());
+    }
 }
