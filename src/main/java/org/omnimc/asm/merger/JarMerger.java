@@ -1,9 +1,32 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2024 OmniMC
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.omnimc.asm.merger;
 
+import org.jetbrains.annotations.NotNull;
 import org.omnimc.asm.common.ByteUtil;
 import org.omnimc.asm.file.IOutputFile;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,7 +72,6 @@ import static java.util.jar.Attributes.Name.MAIN_CLASS;
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
  * @since 2.2.3
  */
-@ApiStatus.NonExtendable
 public class JarMerger {
     private final ConcurrentHashMap<String, byte[]> fileInputs = new ConcurrentHashMap<>();
     private final String mergedJarName;
@@ -165,8 +187,8 @@ public class JarMerger {
     }
 
     /**
-     * Checks the manifest of a given {@linkplain JarFile} and ensures that only one main class attribute
-     * is chosen among all input JAR files.
+     * Checks the manifest of a given {@linkplain JarFile} and ensures that only one main class attribute is chosen
+     * among all input JAR files.
      *
      * @param manifest The {@linkplain Manifest} object representing the manifest of the {@linkplain JarFile}.
      * @throws IOException If there is an error accessing or reading the manifest.
