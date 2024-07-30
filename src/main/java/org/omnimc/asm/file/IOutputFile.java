@@ -8,6 +8,9 @@ package org.omnimc.asm.file;
  * Implementations of this interface should ensure proper handling of file content generation
  * and retrieval according to the specific requirements of the application.
  *
+ * @deprecated since 2.2.6, I am currently working on a solution that will be flexible.
+ *             Allowing you to choose what type of output you want.
+ *
  * @author <b><a href="https://github.com/CadenCCC">Caden</a></b>
  * @since 1.0.0
  */
