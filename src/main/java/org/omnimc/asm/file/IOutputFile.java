@@ -11,6 +11,7 @@ package org.omnimc.asm.file;
  * @author <b><a href="https://github.com/CadenCCC">Caden</a></b>
  * @since 1.0.0
  */
+@Deprecated(since = "2.2.6")
 public interface IOutputFile {
 
     /**
