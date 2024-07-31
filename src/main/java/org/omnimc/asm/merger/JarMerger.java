@@ -26,6 +26,7 @@ package org.omnimc.asm.merger;
 
 import org.jetbrains.annotations.NotNull;
 import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.common.exception.ExceptionHandler;
 import org.omnimc.asm.file.IOutputFile;
 
 import java.io.ByteArrayOutputStream;
@@ -87,7 +88,7 @@ public class JarMerger {
         Objects.requireNonNull(mergedJarName);
 
         if (!mergedJarName.endsWith(".jar")) {
-            throw new IllegalArgumentException(mergedJarName + ", does not end in .jar. This needs to be a Jar file!");
+            ExceptionHandler.handleException(mergedJarName + ", does not end in '.jar'. This needs to be a JAR file!", new IllegalArgumentException());
         }
 
         this.mergedJarName = mergedJarName;
@@ -105,7 +106,7 @@ public class JarMerger {
         Objects.requireNonNull(inputs);
 
         if (inputs.length < 1) {
-            throw new IllegalStateException("You must have more than one input to merge JARs.");
+            ExceptionHandler.handleException("You cannot merge one JAR, you need multiple.", new IllegalArgumentException());
         }
 
         try {
@@ -127,14 +128,17 @@ public class JarMerger {
                         byte[] value = ByteUtil.toByteArray(inputStream, byteArrayOutputStream);
 
                         fileInputs.putIfAbsent(entryName, value);
+
+                        byteArrayOutputStream.close();
+                        inputStream.close();
                     } catch (IOException e) {
-                        throw new RuntimeException("Error parsing bytes.", e);
+                        ExceptionHandler.handleException("Failed reading '" + entryName + "', from '" + jarFile.getName() + "'. Possible I/O closed?", e);
                     }
                 });
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Error reading manifests.", e);
+            ExceptionHandler.handleException("Failed reading manifest. I/O closed?", e);
         }
     }
 
@@ -170,7 +174,7 @@ public class JarMerger {
                     }
 
                 } catch (IOException e) {
-                    throw new RuntimeException("Error creating output file.", e);
+                    ExceptionHandler.handleException("Failed while merging JARs.", e);
                 }
 
                 return byteArrayOutputStream.toByteArray();
@@ -191,9 +195,8 @@ public class JarMerger {
      * among all input JAR files.
      *
      * @param manifest The {@linkplain Manifest} object representing the manifest of the {@linkplain JarFile}.
-     * @throws IOException If there is an error accessing or reading the manifest.
      */
-    private void checkManifest(@NotNull Manifest manifest) throws IOException {
+    private void checkManifest(@NotNull Manifest manifest) {
         Attributes mainAttributes = manifest.getMainAttributes();
         String mainClass = mainAttributes.getValue(MAIN_CLASS);
 

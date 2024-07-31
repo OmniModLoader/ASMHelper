@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.omnimc.asm.changes.IClassChange;
 import org.omnimc.asm.changes.IResourceChange;
 import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.common.exception.ExceptionHandler;
 import org.omnimc.asm.file.ClassFile;
 import org.omnimc.asm.file.IOutputFile;
 import org.omnimc.asm.file.ResourceFile;
@@ -130,7 +131,7 @@ public class MultiClassManager {
 
         for (File fileInput : fileInputs) {
             if (!fileInput.getName().endsWith(".jar")) {
-                throw new RuntimeException("Input Files have to be a Jar file, or end with .jar!");
+                ExceptionHandler.handleException(new IllegalArgumentException("Input File have to be a JAR file!"));
             }
 
             fileNames.add(fileInput.getName());
@@ -159,7 +160,8 @@ public class MultiClassManager {
                             resourceTemp.putIfAbsent(entryName, value);
 
                         }
-                    } catch (IOException ignored) {
+                    } catch (IOException e) {
+                        ExceptionHandler.handleException("Failure to read class/resource bytes, could be a corrupted JAR or I/O issues.", e);
                     }
                 });
 
@@ -167,7 +169,7 @@ public class MultiClassManager {
                 resources.put(fileInput.getName(), resourceTemp);
 
             } catch (IOException e) {
-                throw new RuntimeException("Error reading JAR file: " + e.getMessage(), e);
+                ExceptionHandler.handleException("Failed to read JAR file, potentially could be a corrupted JAR or not actually a JAR file.", e);
             }
         }
     }
@@ -297,7 +299,7 @@ public class MultiClassManager {
                             zipOutputStream.write(classData);
                             zipOutputStream.closeEntry();
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            ExceptionHandler.handleException("Failed to read '" + className + "', in '" + fileName + "'.", e);
                         }
                     });
 
@@ -307,13 +309,13 @@ public class MultiClassManager {
                             zipOutputStream.write(resourceData);
                             zipOutputStream.closeEntry();
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            ExceptionHandler.handleException("Failed to read '" + resourceName + "', in '" + fileName + "'.", e);
                         }
                     });
 
 
                 } catch (IOException e) {
-                    throw new RuntimeException("Failed to create Output File" + fileName);
+                    ExceptionHandler.handleException("Failure to compress class/resource data, maybe null bytes or I/O issues.", e);
                 }
 
                 return byteArrayOutputStream.toByteArray();
@@ -323,8 +325,7 @@ public class MultiClassManager {
 
     /**
      * <h6>Creates an array of {@linkplain IOutputFile} objects representing the output files containing modified
-     * classes
-     * and resources from all loaded JAR files.
+     * classes and resources from all loaded JAR files.
      *
      * @return An array of {@linkplain IOutputFile} objects representing the generated output files.
      */

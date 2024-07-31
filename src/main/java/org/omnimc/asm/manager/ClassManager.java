@@ -27,11 +27,15 @@ package org.omnimc.asm.manager;
 import org.omnimc.asm.changes.IClassChange;
 import org.omnimc.asm.changes.IResourceChange;
 import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.common.exception.ExceptionHandler;
 import org.omnimc.asm.file.ClassFile;
 import org.omnimc.asm.file.IOutputFile;
 import org.omnimc.asm.file.ResourceFile;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -95,19 +99,19 @@ public class ClassManager implements IClassManager {
     /**
      * <h6>Reads a JAR file and populates the {@linkplain #classes} and {@linkplain #resources} collections.
      * <p>If the JAR file contains classes (.class files), they are parsed using the ASM library
-     * and stored as byte arrays in the {@linkplain #classes} map. Other resources are stored
-     * in the {@linkplain #resources} map.
+     * and stored as byte arrays in the {@linkplain #classes} map. Other resources are stored in the
+     * {@linkplain #resources} map.
      *
      * @param fileInput The input File object representing the JAR file to be read. Must not be null.
      * @throws NullPointerException If the provided file is null.
-     * @throws RuntimeException If the provided file is not a JAR file or if an I/O error occurs.
+     * @throws RuntimeException     If the provided file is not a JAR file or if an I/O error occurs.
      */
     @Override
     public void readJarFile(File fileInput) {
         Objects.requireNonNull(fileInput, "You cannot have a NULL file as an input.");
 
         if (!fileInput.getName().endsWith(".jar")) {
-            throw new RuntimeException("Input File HAS to be a Jar file, or end with .jar!");
+            ExceptionHandler.handleException(new IllegalArgumentException("Input file HAS to be a JAR file!"));
         }
 
         this.fileName = fileInput.getName();
@@ -148,23 +152,22 @@ public class ClassManager implements IClassManager {
                     // Closing streams to free resources.
                     stream.close();
                     outputStream.close();
-                } catch (IOException ignored) {
-                    // Ignore exceptions during processing.
+                } catch (IOException e) {
+                    ExceptionHandler.handleException("Failed to read bytes for '" + name + "', in '" + fileName + "'.", e);
                 }
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Error reading JAR file: " + e.getMessage(), e);
+            ExceptionHandler.handleException("Failure to read '" + fileName + "', Could be that it is corrupted or not a real JAR file.", e);
         }
-
     }
 
     /**
      * <h6>Applies changes to classes based on a provided array of {@linkplain IClassChange}.
-     * <p>This method iterates through the {@linkplain #classes} map, applying changes using the array of {@linkplain IClassChange} implementations provided.
+     * <p>This method iterates through the {@linkplain #classes} map, applying changes using the array of
+     * {@linkplain IClassChange} implementations provided.
      *
-     * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes.
-     *                     Must not be null.
+     * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes. Must not be null.
      */
     @Override
     public void applyChanges(IClassChange... classChanges) {
@@ -200,7 +203,8 @@ public class ClassManager implements IClassManager {
 
     /**
      * <h6>Applies changes to resources based on a provided array of {@linkplain IResourceChange}.
-     * <p>This method iterates through the {@linkplain #resources} map, applying changes using the list of {@linkplain IResourceChange} provided.
+     * <p>This method iterates through the {@linkplain #resources} map, applying changes using the list of
+     * {@linkplain IResourceChange} provided.
      *
      * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
      */
@@ -281,7 +285,7 @@ public class ClassManager implements IClassManager {
                         zipOutputStream.closeEntry();
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException("Error creating output file", e);
+                    ExceptionHandler.handleException("Failed compressing classes/resources. Possible I/O error??", e);
                 }
 
                 return byteArrayOutputStream.toByteArray();

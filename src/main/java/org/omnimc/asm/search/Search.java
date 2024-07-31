@@ -25,6 +25,7 @@
 package org.omnimc.asm.search;
 
 import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.common.exception.ExceptionHandler;
 import org.omnimc.asm.file.output.FileOutput;
 
 import java.io.ByteArrayOutputStream;
@@ -47,22 +48,21 @@ import java.util.jar.JarFile;
 public final class Search {
 
     /**
-     * Searches for a specific file within a JAR archive.
+     * <h6>Searches for a specific file within a JAR archive.
      * <p>
      * This method searches for a file with the specified name inside the given JAR file. If the file is found, it
-     * returns an {@linkplain FileOutput} instance containing the file's name and its byte content.
+     * returns a {@linkplain FileOutput} instance containing the file's name and its byte content.
      * </p>
      * <p>
      * The method performs the following steps:
      * <ul>
-     *     <li>Checks if the specified file is a JAR file and exists.</li>
-     *     <li>Opens the JAR file and searches for the specified file.</li>
-     *     <li>If found, reads the file's content and returns it as a {@linkplain FileOutput} instance.</li>
-     *     <li>If not found or an error occurs, returns {@code null} or throws a {@link RuntimeException}.</li>
+     *     <li>Checks if the specified file exists and is a JAR file.</li>
+     *     <li>Opens the JAR file and searches for the specified file entry.</li>
+     *     <li>If the file entry is found, reads its content and returns it as a {@linkplain FileOutput} instance.</li>
+     *     <li>If the file is not found or an error occurs during the process, it logs the exception and returns {@code null}.</li>
      * </ul>
      * </p>
-     *
-     * <h6>Example Usage:</h6>
+     * <b>Example Usage:</b>
      * <pre>{@code
      * File jarFile = new File("path/to/your/file.jar");
      * FileOutput result = Search.searchInFile("META-INF/MANIFEST.MF", jarFile);
@@ -75,10 +75,11 @@ public final class Search {
      * }
      * }</pre>
      *
-     * @param fileName     The name of the file to search for within the JAR archive.
-     * @param fileToSearch The JAR file to search within.
-     * @return An {@linkplain FileOutput} instance containing the file's name and content if found; {@code null} if the
-     * } if the file does not exist in the JAR.
+     * @param fileName     The name of the file to search for within the JAR archive. This should be the relative path
+     *                     of the file inside the JAR.
+     * @param fileToSearch The JAR file to search within. It should be a valid JAR file.
+     * @return A {@linkplain FileOutput} instance containing the file's name and content if the file is found;
+     *         {@code null} if the file does not exist in the JAR or if an error occurs.
      * @throws RuntimeException If an I/O error occurs while accessing the JAR file or reading its contents.
      */
     public static FileOutput searchInFile(String fileName, File fileToSearch) {
@@ -113,7 +114,7 @@ public final class Search {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            ExceptionHandler.handleException("Failed to read '" + fileToSearch.getName() + "'!" , e);
         }
         return null;
     }
