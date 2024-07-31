@@ -1,6 +1,5 @@
 package org.omnimc.asm.creator.method;
 
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -9,7 +8,6 @@ import org.objectweb.asm.MethodVisitor;
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
  * @since 2.2.3
  */
-@ApiStatus.NonExtendable
 public class MethodCreator {
     private final int access;
     private final String name;
