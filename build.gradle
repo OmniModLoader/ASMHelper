@@ -10,7 +10,6 @@ repositories {
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
-
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -32,6 +31,7 @@ jar {
         // That have higher load order.
         attributes "OmniMC-Authenticated": authenticationKey
     }
+
 }
 
 test {
@@ -58,5 +58,11 @@ task fatJar(type: Jar) {
 
 }
 
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    archiveClassifier.set('sources')
+}
+
+jar.dependsOn sourcesJar
 
 build.dependsOn fatJar
