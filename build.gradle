@@ -30,6 +30,19 @@ jar {
     }
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            groupId = group
+            artifactId = 'ASMHelper'
+            version = version
+        }
+    }
+}
+
 test {
     useJUnitPlatform()
 }
