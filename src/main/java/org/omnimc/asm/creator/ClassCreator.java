@@ -44,9 +44,6 @@ public class ClassCreator {
     public ClassCreator createClass(@NotNull Option selectedOption, IOption option) {
         this.currentOption = selectedOption;
 
-        switch (selectedOption) {
-            case CLASS, RECORD, INTERFACE, ENUM, ANNOTATION -> option.runOption(classWriter);
-        }
         return this;
     }
 

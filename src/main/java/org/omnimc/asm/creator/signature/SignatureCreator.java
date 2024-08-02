@@ -26,10 +26,7 @@ package org.omnimc.asm.creator.signature;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * <h6>A utility class for creating JVM-readable type signatures, including support for generics.
@@ -96,7 +93,7 @@ public final class SignatureCreator {
      */
     private static String genericLookUp(Class<?> type1, Class<?>... genericTypes) {
         StringBuilder signatureBuilder = new StringBuilder("<");
-        List<Class<?>> typesList = genericTypes == null ? Collections.emptyList() : new ArrayList<>(List.of(genericTypes));
+        List<Class<?>> typesList = genericTypes == null ? Collections.emptyList() : new ArrayList<>(Arrays.asList(genericTypes));
         int numberOfGenericParams = type1.getTypeParameters().length;
 
         for (int i = 0; i < numberOfGenericParams; i++) {
