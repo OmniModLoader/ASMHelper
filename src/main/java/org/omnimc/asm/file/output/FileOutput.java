@@ -22,29 +22,34 @@
  * SOFTWARE.
  */
 
-package org.omnimc.asm.common;
+package org.omnimc.asm.file.output;
 
-import org.jetbrains.annotations.ApiStatus;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.Arrays;
+import java.util.zip.Deflater;
 
 /**
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
- * @since 2.2.3
+ * @since 2.2.6
  */
-@ApiStatus.Internal
-public final class ByteUtil {
+public abstract class FileOutput extends AbstractOutput<byte[], Integer> {
 
-    public static byte[] toByteArray(InputStream inputStream, ByteArrayOutputStream byteArrayOutputStream) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
+    @Override
+    public abstract String getName();
 
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, bytesRead);
-        }
+    @Override
+    public abstract byte[] getOutput(Integer parameter);
 
-        return byteArrayOutputStream.toByteArray();
+    @Override
+    public byte[] getOutput() {
+        // This will do nothing;
+        return this.getOutput(Deflater.NO_COMPRESSION);
+    }
+
+    @Override
+    public String toString() {
+        return "ResourceFile{" +
+                "name='" + getName() + '\'' +
+                ", output=" + Arrays.toString(getOutput()) +
+                '}';
     }
 }

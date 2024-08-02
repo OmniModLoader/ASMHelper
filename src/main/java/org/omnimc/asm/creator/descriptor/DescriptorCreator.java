@@ -22,29 +22,43 @@
  * SOFTWARE.
  */
 
-package org.omnimc.asm.common;
+package org.omnimc.asm.creator.descriptor;
 
-import org.jetbrains.annotations.ApiStatus;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
  * @since 2.2.3
  */
-@ApiStatus.Internal
-public final class ByteUtil {
+public final class DescriptorCreator {
 
-    public static byte[] toByteArray(InputStream inputStream, ByteArrayOutputStream byteArrayOutputStream) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
+    @NotNull
+    public static String fieldDescriptor(@NotNull Class<?> clazz) {
+        return clazz.descriptorString();
+    }
 
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, bytesRead);
+    @Contract("_,null -> !null; _,!null -> !null")
+    public static String methodDescriptor(@NotNull Class<?> returnableClass, @Nullable Class<?>... descriptorInformation) {
+        StringBuilder descriptorBuilder = new StringBuilder();
+
+        descriptorBuilder.append("(");
+
+        for (Class<?> aClass : descriptorInformation) {
+            if (aClass == null) {
+                continue;
+            }
+
+            descriptorBuilder.append(aClass.descriptorString());
         }
 
-        return byteArrayOutputStream.toByteArray();
+        descriptorBuilder.append(")").append(returnableClass.descriptorString());
+
+        return descriptorBuilder.toString();
+    }
+
+    public static String emptyMethodDescriptor(@NotNull Class<?> returnableClass) {
+        return methodDescriptor(returnableClass, (Class<?>) null);
     }
 }

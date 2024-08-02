@@ -1,8 +1,33 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2024 OmniMC
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.omnimc.asm.manager.thread;
 
 import org.omnimc.asm.changes.IClassChange;
 import org.omnimc.asm.changes.IResourceChange;
 import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.common.exception.ExceptionHandler;
 import org.omnimc.asm.file.ClassFile;
 import org.omnimc.asm.file.IOutputFile;
 import org.omnimc.asm.file.ResourceFile;
@@ -126,7 +151,8 @@ public class SafeClassManager implements IClassManager {
         // We only use contains because it is proven to be faster seen here:
         // https://stackoverflow.com/questions/28208793/in-java-which-is-faster-string-containssome-text-or-regex-that-looks-for
         if (!fileInput.getName().contains(".jar") || fileInput.isDirectory()) {
-            throw new RuntimeException("Input File HAS to be a Jar file, or end with .jar!");
+            ExceptionHandler.handleException(new IllegalArgumentException("Input file HAS to be a JAR file!"));
+            return;
         }
 
         this.fileName = fileInput.getName();
@@ -164,13 +190,13 @@ public class SafeClassManager implements IClassManager {
                     // Closing streams to free resources.
                     inputStream.close();
                     byteArrayOutputStream.close();
-                } catch (IOException ignored) {
-                    // Ignore exceptions during processing.
+                } catch (IOException e) {
+                    ExceptionHandler.handleException("Failed to collect class/resource bytes, could be a I/O issue.", e);
                 }
             });
 
         } catch (IOException e) {
-            throw new RuntimeException("Error reading JAR file: " + e.getMessage(), e);
+            ExceptionHandler.handleException("Failure to read JAR file, possibly corruption or chosen JAR file is not actually a JAR file.", e);
         }
     }
 
@@ -333,13 +359,21 @@ public class SafeClassManager implements IClassManager {
                         }
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException("Error creating output file", e);
+                    ExceptionHandler.handleException("Failure to compress class/resource data. Could be a possible concurrency issue??", e);
                 }
 
                 return byteArrayOutputStream.toByteArray();
 
             }
         };
+    }
+
+    public ConcurrentHashMap<String, byte[]> getClasses() {
+        return new ConcurrentHashMap<>(classes);
+    }
+
+    public ConcurrentHashMap<String, byte[]> getResources() {
+        return new ConcurrentHashMap<>(resources);
     }
 
     /**
@@ -361,5 +395,27 @@ public class SafeClassManager implements IClassManager {
             this.resources.clear();
         }
         this.fileName = null;
+    }
+
+    @Override
+    public String toString() {
+        return "SafeClassManager{" +
+                "fileName='" + fileName + '\'' +
+                ", classes=" + classes +
+                ", resources=" + resources +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SafeClassManager that = (SafeClassManager) o;
+        return Objects.equals(fileName, that.fileName) && Objects.equals(getClasses(), that.getClasses()) && Objects.equals(getResources(), that.getResources());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileName, getClasses(), getResources());
     }
 }

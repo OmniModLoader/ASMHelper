@@ -162,7 +162,7 @@ public static class CustomClassManager implements IClassManager {
 
 </details>
 
-# JarMerger
+## JarMerger
 
 <details>
 <summary>Code...</summary>
@@ -191,7 +191,7 @@ public static class JarMergerExample {
 ```
 </details>
 
-# MultiClassManager
+## MultiClassManager
 
 <details>
 <summary>Code...</summary>
@@ -251,6 +251,25 @@ public static class MultiClassManagerExample {
 ```
 
 </details>
+
+## Searcher
+<details>
+<summary>Code...</summary>
+
+``` java
+File jarFile = new File("path/to/your/file.jar");
+FileOutput result = Search.searchInFile("META-INF/MANIFEST.MF", jarFile);
+if (result != null) {
+    System.out.println("File found: " + result.getName());
+    byte[] content = result.getOutput();
+    // Process the content
+} else {
+    System.out.println("File not found.");
+}
+```
+
+</details>
+
 
 # Additions
 

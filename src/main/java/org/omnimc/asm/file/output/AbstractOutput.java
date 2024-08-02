@@ -22,29 +22,22 @@
  * SOFTWARE.
  */
 
-package org.omnimc.asm.common;
-
-import org.jetbrains.annotations.ApiStatus;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+package org.omnimc.asm.file.output;
 
 /**
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
- * @since 2.2.3
+ * @since 2.2.6
  */
-@ApiStatus.Internal
-public final class ByteUtil {
+public abstract class AbstractOutput<T, P> {
 
-    public static byte[] toByteArray(InputStream inputStream, ByteArrayOutputStream byteArrayOutputStream) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
+    //public abstract void init(String name, byte[] bytes); // This would be the abstract method in it
 
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, bytesRead);
-        }
+    public abstract String getName();
 
-        return byteArrayOutputStream.toByteArray();
+    public abstract T getOutput();
+
+    public T getOutput(P parameter) {
+        return null;
     }
+
 }
