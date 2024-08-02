@@ -34,6 +34,26 @@ jar {
 
 }
 
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    archiveClassifier.set('sources')
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+
+            groupId = 'your.group.id'
+            artifactId = 'your-artifact-id'
+            version = '1.0.0'
+        }
+    }
+}
+
 test {
     useJUnitPlatform()
 }
@@ -56,11 +76,6 @@ task fatJar(type: Jar) {
     }
     archiveFileName = "ASMHelper-" + version + "-all.jar"
 
-}
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    archiveClassifier.set('sources')
 }
 
 jar.dependsOn sourcesJar
