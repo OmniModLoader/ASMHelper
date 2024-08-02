@@ -112,6 +112,7 @@ public class ClassManager implements IClassManager {
 
         if (!fileInput.getName().endsWith(".jar")) {
             ExceptionHandler.handleException(new IllegalArgumentException("Input file HAS to be a JAR file!"));
+            return;
         }
 
         this.fileName = fileInput.getName();

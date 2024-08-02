@@ -107,6 +107,7 @@ public class JarMerger {
 
         if (inputs.length < 1) {
             ExceptionHandler.handleException("You cannot merge one JAR, you need multiple.", new IllegalArgumentException());
+            return;
         }
 
         try {

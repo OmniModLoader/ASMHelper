@@ -132,6 +132,7 @@ public class MultiClassManager {
         for (File fileInput : fileInputs) {
             if (!fileInput.getName().endsWith(".jar")) {
                 ExceptionHandler.handleException(new IllegalArgumentException("Input File have to be a JAR file!"));
+                continue;
             }
 
             fileNames.add(fileInput.getName());

@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class DescriptorCreator {
 
+    @NotNull
     public static String fieldDescriptor(@NotNull Class<?> clazz) {
         return clazz.descriptorString();
     }
@@ -60,5 +61,4 @@ public final class DescriptorCreator {
     public static String emptyMethodDescriptor(@NotNull Class<?> returnableClass) {
         return methodDescriptor(returnableClass, (Class<?>) null);
     }
-
 }

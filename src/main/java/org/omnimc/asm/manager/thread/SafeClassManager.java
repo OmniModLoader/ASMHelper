@@ -152,6 +152,7 @@ public class SafeClassManager implements IClassManager {
         // https://stackoverflow.com/questions/28208793/in-java-which-is-faster-string-containssome-text-or-regex-that-looks-for
         if (!fileInput.getName().contains(".jar") || fileInput.isDirectory()) {
             ExceptionHandler.handleException(new IllegalArgumentException("Input file HAS to be a JAR file!"));
+            return;
         }
 
         this.fileName = fileInput.getName();

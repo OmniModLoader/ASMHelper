@@ -104,7 +104,7 @@ public final class ExceptionHandler {
         if (message != null) {
             handler.append(" ") // Indent.
                     .append("Additional Information:\n");
-            handler.append("  ")
+            handler.append("  ") // Indent.
                     .append(LineWrapper.wrapText(message instanceof String ? (String) message : message.toString()));
         }
 
