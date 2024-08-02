@@ -1,5 +1,7 @@
 # ASM Helper
 
+ # Project is having issues building in JitPack...
+
 ASM Helper is a library designed to facilitate the modification of JAR files, simplifying the process of making changes to ModFiles within the OmniMC framework.
 This library is versatile and can be utilized in various contexts beyond OmniMC.
 
