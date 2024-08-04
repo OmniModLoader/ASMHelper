@@ -1,8 +1,5 @@
 # ASM Helper
 
- # Project is having issues building in JitPack...
-Use this for now `com.github.OmniModLoader:ASMHelper:3caf1a87`
-
 ASM Helper is a library designed to facilitate the modification of JAR files, simplifying the process of making changes to ModFiles within the OmniMC framework.
 This library is versatile and can be utilized in various contexts beyond OmniMC.
 
@@ -31,7 +28,7 @@ This library is versatile and can be utilized in various contexts beyond OmniMC.
 <dependency>
     <groupId>com.github.OmniModLoader</groupId>
     <artifactId>ASMHelper</artifactId>
-    <version>2.2.8</version>
+    <version>2.2.9</version>
 </dependency>
 ```
 
@@ -51,7 +48,7 @@ repositories {
 
 ```gradle
 dependencies {
-    implementation 'com.github.OmniModLoader:ASMHelper:2.2.8'
+    implementation 'com.github.OmniModLoader:ASMHelper:2.2.9'
 }
 ```
 
