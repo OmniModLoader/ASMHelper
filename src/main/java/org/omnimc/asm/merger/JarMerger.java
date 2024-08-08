@@ -86,8 +86,6 @@ public class JarMerger {
      * @throws IllegalArgumentException If {@code mergedJarName} does not end with ".jar".
      */
     public JarMerger(@NotNull String mergedJarName) {
-        Objects.requireNonNull(mergedJarName); //TODO double null check...?
-
         if (!mergedJarName.endsWith(".jar")) {
             ExceptionHandler.handleException(mergedJarName + ", does not end in '.jar'. This needs to be a JAR file!", new IllegalArgumentException());
         }
