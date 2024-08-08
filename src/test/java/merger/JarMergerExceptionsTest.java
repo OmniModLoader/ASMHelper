@@ -19,6 +19,7 @@ public class JarMergerExceptionsTest {
 
     @Test
     public void nullMergedJarNameTest() {
+        //noinspection DataFlowIssue
         Assertions.assertThrows(NullPointerException.class, () -> new JarMerger(null));
     }
 
