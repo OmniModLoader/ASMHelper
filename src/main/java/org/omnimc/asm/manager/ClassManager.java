@@ -7,7 +7,10 @@ import org.omnimc.asm.file.ClassFile;
 import org.omnimc.asm.file.IOutputFile;
 import org.omnimc.asm.file.ResourceFile;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -15,9 +18,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * <h6>{@linkplain ClassManager} manages a collection of classes and resources from a JAR file.
- * <p>It provides methods to read a JAR file, apply changes to classes and resources,
- * and generate an {@linkplain IOutputFile} containing modified classes and resources.
+ * <h6>{@linkplain ClassManager} manages a collection of classes and resources from a JAR file.</h6>
+ * <p>
+ * It provides methods to read a JAR file, apply changes to classes and resources, and generate an
+ * {@linkplain IOutputFile} containing modified classes and resources.
  *
  * <p><b>Usage:</b></p>
  * <pre>{@code
@@ -70,14 +74,14 @@ public class ClassManager implements IClassManager {
     private final HashMap<String, byte[]> resources = new HashMap<>();
 
     /**
-     * <h6>Reads a JAR file and populates the {@linkplain #classes} and {@linkplain #resources} collections.
-     * <p>If the JAR file contains classes (.class files), they are parsed using the ASM library
-     * and stored as byte arrays in the {@linkplain #classes} map. Other resources are stored
-     * in the {@linkplain #resources} map.
+     * <h6>Reads a JAR file and populates the {@linkplain #classes} and {@linkplain #resources} collections.</h6>
+     * <p>
+     * If the JAR file contains classes (.class files), they are parsed using the ASM library and stored as byte arrays
+     * in the {@linkplain #classes} map. Other resources are stored in the {@linkplain #resources} map.
      *
      * @param fileInput The input File object representing the JAR file to be read. Must not be null.
      * @throws NullPointerException If the provided file is null.
-     * @throws RuntimeException If the provided file is not a JAR file or if an I/O error occurs.
+     * @throws RuntimeException     If the provided file is not a JAR file or if an I/O error occurs.
      */
     @Override
     public void readJarFile(File fileInput) {
@@ -136,11 +140,12 @@ public class ClassManager implements IClassManager {
     }
 
     /**
-     * <h6>Applies changes to classes based on a provided array of {@linkplain IClassChange}.
-     * <p>This method iterates through the {@linkplain #classes} map, applying changes using the array of {@linkplain IClassChange} implementations provided.
+     * <h6>Applies changes to classes based on a provided array of {@linkplain IClassChange}.</h6>
+     * <p>
+     * This method iterates through the {@linkplain #classes} map, applying changes using the array of
+     * {@linkplain IClassChange} implementations provided.
      *
-     * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes.
-     *                     Must not be null.
+     * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes. Must not be null.
      */
     @Override
     public void applyChanges(IClassChange... classChanges) {
@@ -174,8 +179,10 @@ public class ClassManager implements IClassManager {
     }
 
     /**
-     * <h6>Applies changes to resources based on a provided array of {@linkplain IResourceChange}.
-     * <p>This method iterates through the {@linkplain #resources} map, applying changes using the list of {@linkplain IResourceChange} provided.
+     * <h6>Applies changes to resources based on a provided array of {@linkplain IResourceChange}.</h6>
+     * <p>
+     * This method iterates through the {@linkplain #resources} map, applying changes using the list of
+     * {@linkplain IResourceChange} provided.
      *
      * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
      */
@@ -211,9 +218,10 @@ public class ClassManager implements IClassManager {
     }
 
     /**
-     * <h6>Generates an {@linkplain IOutputFile} containing modified classes and resources.
-     * <p>It creates a ZIP file in memory and adds modified classes and resources to it.
-     * The output file can be retrieved as a byte array.
+     * <h6>Generates an {@linkplain IOutputFile} containing modified classes and resources.</h6>
+     * <p>
+     * It creates a ZIP file in memory and adds modified classes and resources to it. The output file can be retrieved
+     * as a byte array.
      *
      * @return An instance of {@linkplain IOutputFile} representing the generated output file.
      */
@@ -266,8 +274,9 @@ public class ClassManager implements IClassManager {
     }
 
     /**
-     * <h6>Closes resources and clears internal collections.
-     * <p>It resets {@linkplain #fileName}, clears {@linkplain #classes} map, and clears {@linkplain #resources} map.
+     * <h6>Closes resources and clears internal collections.</h6>
+     * <p>
+     * It resets {@linkplain #fileName}, clears {@linkplain #classes} map, and clears {@linkplain #resources} map.
      */
     @Override
     public void close() {

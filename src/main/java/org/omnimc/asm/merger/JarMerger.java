@@ -1,9 +1,9 @@
 package org.omnimc.asm.merger;
 
-import org.omnimc.asm.common.ByteUtil;
-import org.omnimc.asm.file.IOutputFile;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.file.IOutputFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -166,8 +166,8 @@ public class JarMerger {
     }
 
     /**
-     * Checks the manifest of a given {@linkplain JarFile} and ensures that only one main class attribute
-     * is chosen among all input JAR files.
+     * Checks the manifest of a given {@linkplain JarFile} and ensures that only one main class attribute is chosen
+     * among all input JAR files.
      *
      * @param manifest The {@linkplain Manifest} object representing the manifest of the {@linkplain JarFile}.
      * @throws IOException If there is an error accessing or reading the manifest.
