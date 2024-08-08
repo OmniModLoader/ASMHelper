@@ -16,6 +16,7 @@ import java.util.zip.Deflater;
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
  * @since 1.1.3
  */
+@SuppressWarnings("NonFinalUtilityClass")
 public class Main {
 
     private static final List<String> speedOptions = Arrays.asList("sp", "speed", "speedTest", "t", "test");
