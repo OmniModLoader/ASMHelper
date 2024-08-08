@@ -27,6 +27,7 @@ package org.omnimc.asm.manager;
 import org.omnimc.asm.changes.IClassChange;
 import org.omnimc.asm.changes.IResourceChange;
 import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.common.exception.ExceptionHandler;
 import org.omnimc.asm.file.ClassFile;
 import org.omnimc.asm.file.IOutputFile;
 import org.omnimc.asm.file.ResourceFile;
@@ -160,7 +161,6 @@ public class ClassManager implements IClassManager {
                     ExceptionHandler.handleException("Failed to read bytes for '" + name + "', in '" + fileName + "'.", e);
                 }
             }
-
         } catch (IOException e) {
             ExceptionHandler.handleException("Failure to read '" + fileName + "', Could be that it is corrupted or not a real JAR file.", e);
         }
@@ -173,7 +173,6 @@ public class ClassManager implements IClassManager {
      * <p>This method iterates through the {@linkplain #classes} map, applying changes using the array of
      * {@linkplain IClassChange} implementations provided.
      *
-     * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes. Must not be null.
      * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes. Must not be null.
      */
     @Override
@@ -205,7 +204,6 @@ public class ClassManager implements IClassManager {
 
         classes.clear();
         classes.putAll(tempHashMap);
-
     }
 
     /**
@@ -256,6 +254,7 @@ public class ClassManager implements IClassManager {
     @Override
     public IOutputFile outputFile() {
         return new IOutputFile() {
+
             @Override
             public String getFileName() {
                 return fileName;

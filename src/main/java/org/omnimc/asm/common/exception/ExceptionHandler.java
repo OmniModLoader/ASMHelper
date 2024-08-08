@@ -48,6 +48,7 @@ import java.io.PrintStream;
  * @since 2.2.6
  */
 public final class ExceptionHandler {
+
     private static final PrintStream PRINT_STREAM = System.err;
 
     /**
@@ -121,6 +122,7 @@ public final class ExceptionHandler {
      * @since 2.2.6
      */
     static class LineWrapper {
+
         private static final int WRAP_LENGTH = 80;
         private static final String SPACE = "  "; // The indentation.
 
