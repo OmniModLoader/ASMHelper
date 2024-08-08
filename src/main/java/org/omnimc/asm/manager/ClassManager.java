@@ -55,6 +55,7 @@ import java.util.zip.ZipOutputStream;
  * @since 1.0.0
  */
 public class ClassManager implements IClassManager {
+
     /**
      * Represents the name of the JAR file inputted.
      */
@@ -132,7 +133,6 @@ public class ClassManager implements IClassManager {
         } catch (IOException e) {
             throw new RuntimeException("Error reading JAR file: " + e.getMessage(), e);
         }
-
     }
 
     /**
@@ -171,7 +171,6 @@ public class ClassManager implements IClassManager {
 
         classes.clear();
         classes.putAll(tempHashMap);
-
     }
 
     /**
@@ -221,6 +220,7 @@ public class ClassManager implements IClassManager {
     @Override
     public IOutputFile outputFile() {
         return new IOutputFile() {
+
             @Override
             public String getFileName() {
                 return fileName;
@@ -264,7 +264,6 @@ public class ClassManager implements IClassManager {
             }
         };
     }
-
 
     /**
      * <h6>Closes resources and clears internal collections.

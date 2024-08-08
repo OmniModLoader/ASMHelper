@@ -20,5 +20,4 @@ public interface IResourceChange {
      * @return A {@linkplain ResourceFile} containing the updated name and byte array data after applying changes.
      */
     ResourceFile applyChange(String name, byte[] data);
-
 }

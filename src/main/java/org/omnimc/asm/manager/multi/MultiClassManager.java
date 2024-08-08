@@ -83,6 +83,7 @@ import java.util.zip.ZipOutputStream;
  */
 @ApiStatus.NonExtendable
 public class MultiClassManager {
+
     private final ArrayList<String> fileNames = new ArrayList<>();
     private final ConcurrentHashMap<String, ConcurrentHashMap<String, byte[]>> classes = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ConcurrentHashMap<String, byte[]>> resources = new ConcurrentHashMap<>();
@@ -328,5 +329,4 @@ public class MultiClassManager {
         classes.clear();
         resources.clear();
     }
-
 }

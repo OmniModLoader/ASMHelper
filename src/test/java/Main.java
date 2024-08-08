@@ -17,6 +17,7 @@ import java.util.zip.Deflater;
  * @since 1.1.3
  */
 public class Main {
+
     private static final List<String> speedOptions = Arrays.asList("sp", "speed", "speedTest", "t", "test");
     private static final List<String> safeClassLoader = Arrays.asList("T", "thread", "S", "safeloader", "SafeClassLoader");
     private static final List<String> classLoader = Arrays.asList("C", "CL", "classloader", "U", "unsafe");

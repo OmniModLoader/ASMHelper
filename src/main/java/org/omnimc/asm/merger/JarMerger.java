@@ -51,6 +51,7 @@ import static java.util.jar.Attributes.Name.MAIN_CLASS;
  */
 @ApiStatus.NonExtendable
 public class JarMerger {
+
     private final ConcurrentHashMap<String, byte[]> fileInputs = new ConcurrentHashMap<>();
     private final String mergedJarName;
     private Attributes chosenManifestAttr = null;
@@ -110,7 +111,6 @@ public class JarMerger {
                     }
                 });
             }
-
         } catch (IOException e) {
             throw new RuntimeException("Error reading manifests.", e);
         }
@@ -126,6 +126,7 @@ public class JarMerger {
      */
     public IOutputFile outputFile() {
         return new IOutputFile() {
+
             @Override
             public String getFileName() {
                 return mergedJarName;

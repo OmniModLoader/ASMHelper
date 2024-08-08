@@ -10,6 +10,7 @@ import java.util.Map;
  * @since 2.1.3
  */
 public class ClassFile implements Map.Entry<String, byte[]> {
+
     /**
      * The key representing the name or identifier of the class.
      */

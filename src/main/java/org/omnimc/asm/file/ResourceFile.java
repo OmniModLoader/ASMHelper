@@ -15,6 +15,7 @@ import java.util.Map;
  * @since 1.0.0
  */
 public class ResourceFile implements Map.Entry<String, byte[]> {
+
     /**
      * The key representing the name or identifier of the resource.
      */

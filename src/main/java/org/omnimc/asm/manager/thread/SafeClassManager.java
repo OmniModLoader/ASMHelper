@@ -89,6 +89,7 @@ import java.util.zip.ZipOutputStream;
  * @since 1.1.3
  */
 public class SafeClassManager implements IClassManager {
+
     /**
      * Represents the current file name being processed.
      */
@@ -291,6 +292,7 @@ public class SafeClassManager implements IClassManager {
     @Override
     public IOutputFile outputFile() {
         return new IOutputFile() {
+
             @Override
             public String getFileName() {
                 return fileName;
@@ -298,7 +300,6 @@ public class SafeClassManager implements IClassManager {
 
             @Override
             public byte[] getFileInBytes(int compression) {
-
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
                 try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
@@ -337,7 +338,6 @@ public class SafeClassManager implements IClassManager {
                 }
 
                 return byteArrayOutputStream.toByteArray();
-
             }
         };
     }

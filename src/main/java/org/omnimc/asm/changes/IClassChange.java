@@ -22,5 +22,4 @@ public interface IClassChange {
      * @return The {@link ClassFile} object representing the modified class file.
      */
     ClassFile applyChange(String name, byte[] classBytes);
-
 }
