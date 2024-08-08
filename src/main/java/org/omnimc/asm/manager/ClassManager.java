@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2024 OmniMC
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.omnimc.asm.manager;
 
 import org.omnimc.asm.changes.IClassChange;
@@ -18,7 +42,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * <h6>{@linkplain ClassManager} manages a collection of classes and resources from a JAR file.</h6>
+ * <h6>{@linkplain ClassManager} manages a collection of classes and resources from a JAR file.
  * <p>
  * It provides methods to read a JAR file, apply changes to classes and resources, and generate an
  * {@linkplain IOutputFile} containing modified classes and resources.
@@ -74,13 +98,15 @@ public class ClassManager implements IClassManager {
     private final HashMap<String, byte[]> resources = new HashMap<>();
 
     /**
-     * <h6>Reads a JAR file and populates the {@linkplain #classes} and {@linkplain #resources} collections.</h6>
-     * <p>
-     * If the JAR file contains classes (.class files), they are parsed using the ASM library and stored as byte arrays
-     * in the {@linkplain #classes} map. Other resources are stored in the {@linkplain #resources} map.
+     * <h6>Reads a JAR file and populates the {@linkplain #classes} and {@linkplain #resources} collections.
+     * <p>If the JAR file contains classes (.class files), they are parsed using the ASM library
+     * and stored as byte arrays in the {@linkplain #classes} map. Other resources are stored in the
+     * {@linkplain #resources} map. and stored as byte arrays in the {@linkplain #classes} map. Other resources are
+     * stored in the {@linkplain #resources} map.
      *
      * @param fileInput The input File object representing the JAR file to be read. Must not be null.
      * @throws NullPointerException If the provided file is null.
+     * @throws RuntimeException     If the provided file is not a JAR file or if an I/O error occurs.
      * @throws RuntimeException     If the provided file is not a JAR file or if an I/O error occurs.
      */
     @Override
@@ -88,7 +114,8 @@ public class ClassManager implements IClassManager {
         Objects.requireNonNull(fileInput, "You cannot have a NULL file as an input.");
 
         if (!fileInput.getName().endsWith(".jar")) {
-            throw new RuntimeException("Input File HAS to be a Jar file, or end with .jar!");
+            ExceptionHandler.handleException(new IllegalArgumentException("Input file HAS to be a JAR file!"));
+            return;
         }
 
         this.fileName = fileInput.getName();
@@ -129,22 +156,24 @@ public class ClassManager implements IClassManager {
                     // Closing streams to free resources.
                     stream.close();
                     outputStream.close();
-                } catch (IOException ignored) {
-                    // Ignore exceptions during processing.
+                } catch (IOException e) {
+                    ExceptionHandler.handleException("Failed to read bytes for '" + name + "', in '" + fileName + "'.", e);
                 }
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Error reading JAR file: " + e.getMessage(), e);
+            ExceptionHandler.handleException("Failure to read '" + fileName + "', Could be that it is corrupted or not a real JAR file.", e);
         }
     }
 
     /**
-     * <h6>Applies changes to classes based on a provided array of {@linkplain IClassChange}.</h6>
-     * <p>
-     * This method iterates through the {@linkplain #classes} map, applying changes using the array of
+     * <h6>Applies changes to classes based on a provided array of {@linkplain IClassChange}.
+     * <p>This method iterates through the {@linkplain #classes} map, applying changes using the array of
+     * {@linkplain IClassChange} implementations provided.
+     * <p>This method iterates through the {@linkplain #classes} map, applying changes using the array of
      * {@linkplain IClassChange} implementations provided.
      *
+     * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes. Must not be null.
      * @param classChanges Array of {@linkplain IClassChange} implementations for modifying classes. Must not be null.
      */
     @Override
@@ -176,12 +205,12 @@ public class ClassManager implements IClassManager {
 
         classes.clear();
         classes.putAll(tempHashMap);
+
     }
 
     /**
-     * <h6>Applies changes to resources based on a provided array of {@linkplain IResourceChange}.</h6>
-     * <p>
-     * This method iterates through the {@linkplain #resources} map, applying changes using the list of
+     * <h6>Applies changes to resources based on a provided array of {@linkplain IResourceChange}.
+     * <p>This method iterates through the {@linkplain #resources} map, applying changes using the list of
      * {@linkplain IResourceChange} provided.
      *
      * @param resourceChanges Array of {@linkplain IResourceChange} implementations for modifying resources.
@@ -218,17 +247,15 @@ public class ClassManager implements IClassManager {
     }
 
     /**
-     * <h6>Generates an {@linkplain IOutputFile} containing modified classes and resources.</h6>
-     * <p>
-     * It creates a ZIP file in memory and adds modified classes and resources to it. The output file can be retrieved
-     * as a byte array.
+     * <h6>Generates an {@linkplain IOutputFile} containing modified classes and resources.
+     * <p>It creates a ZIP file in memory and adds modified classes and resources to it.
+     * The output file can be retrieved as a byte array.
      *
      * @return An instance of {@linkplain IOutputFile} representing the generated output file.
      */
     @Override
     public IOutputFile outputFile() {
         return new IOutputFile() {
-
             @Override
             public String getFileName() {
                 return fileName;
@@ -244,7 +271,7 @@ public class ClassManager implements IClassManager {
                     for (Map.Entry<String, byte[]> entry : classes.entrySet()) {
                         String entryName = entry.getKey();
                         if (!entryName.contains(".class")) {
-                            entryName = entryName.concat(".class");
+                            entryName = entryName + ".class";
                         }
 
                         byte[] entryData = entry.getValue();
@@ -265,7 +292,7 @@ public class ClassManager implements IClassManager {
                         zipOutputStream.closeEntry();
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException("Error creating output file", e);
+                    ExceptionHandler.handleException("Failed compressing classes/resources. Possible I/O error??", e);
                 }
 
                 return byteArrayOutputStream.toByteArray();
@@ -273,8 +300,16 @@ public class ClassManager implements IClassManager {
         };
     }
 
+    public HashMap<String, byte[]> getClasses() {
+        return new HashMap<>(classes);
+    }
+
+    public HashMap<String, byte[]> getResources() {
+        return new HashMap<>(resources);
+    }
+
     /**
-     * <h6>Closes resources and clears internal collections.</h6>
+     * <h6>Closes resources and clears internal collections.
      * <p>
      * It resets {@linkplain #fileName}, clears {@linkplain #classes} map, and clears {@linkplain #resources} map.
      */
@@ -283,5 +318,33 @@ public class ClassManager implements IClassManager {
         this.fileName = null;
         classes.clear();
         resources.clear();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ClassManager that = (ClassManager) o;
+        return Objects.equals(fileName, that.fileName)
+               && Objects.equals(getClasses(), that.getClasses())
+               && Objects.equals(getResources(), that.getResources());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileName, getClasses(), getResources());
+    }
+
+    @Override
+    public String toString() {
+        return "ClassManager{" +
+               "fileName='" + fileName + '\'' +
+               ", classes=" + classes +
+               ", resources=" + resources +
+               '}';
     }
 }

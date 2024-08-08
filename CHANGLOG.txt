@@ -1,3 +1,9 @@
++---------------------2.2.6---------------------+
+- Added a Search.
+- Added a AccessFlagChecker.
+- Added a AccessFlagCombiner.
+- Not finished Creator.
+- Added ways to view classFiles and Resources in ClassManagers.
 +---------------------2.2.4---------------------+
 - Added a JarMerger done.
 - Added MultiClassManager.

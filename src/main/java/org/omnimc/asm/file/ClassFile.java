@@ -1,6 +1,8 @@
 package org.omnimc.asm.file;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <h6>{@linkplain ClassFile} represents a file entry for a class, encapsulating its name and byte data.
@@ -61,5 +63,31 @@ public class ClassFile implements Map.Entry<String, byte[]> {
     public byte[] setValue(byte[] value) {
         this.data = value;
         return data;
+    }
+
+    @Override
+    public String toString() {
+        return "ClassFile{" +
+               "name='" + name + '\'' +
+               ", data=" + Arrays.toString(data) +
+               '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ClassFile classFile = (ClassFile) o;
+        return Objects.equals(name, classFile.getKey())
+               && Objects.deepEquals(data, classFile.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, Arrays.hashCode(data));
     }
 }

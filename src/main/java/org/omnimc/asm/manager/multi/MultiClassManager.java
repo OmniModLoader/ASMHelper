@@ -1,13 +1,38 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2024 OmniMC
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.omnimc.asm.manager.multi;
 
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.omnimc.asm.changes.IClassChange;
 import org.omnimc.asm.changes.IResourceChange;
 import org.omnimc.asm.common.ByteUtil;
+import org.omnimc.asm.common.exception.ExceptionHandler;
 import org.omnimc.asm.file.ClassFile;
 import org.omnimc.asm.file.IOutputFile;
 import org.omnimc.asm.file.ResourceFile;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,7 +49,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * <h6>{@linkplain MultiClassManager} is a class designed to manage a collection of classes and resources from multiple JAR files.
+ * <h6>{@linkplain MultiClassManager} is a class designed to manage a collection of classes and resources from multiple
+ * JAR files.
  * <p>It provides methods to read JAR files, apply changes to both classes and resources, and generate an
  * {@linkplain IOutputFile} that encapsulates the modifications made to the JAR files.
  *
@@ -106,7 +132,8 @@ public class MultiClassManager {
 
         for (File fileInput : fileInputs) {
             if (!fileInput.getName().endsWith(".jar")) {
-                throw new RuntimeException("Input Files have to be a Jar file, or end with .jar!");
+                ExceptionHandler.handleException(new IllegalArgumentException("Input File have to be a JAR file!"));
+                continue;
             }
 
             fileNames.add(fileInput.getName());
@@ -135,7 +162,8 @@ public class MultiClassManager {
                             resourceTemp.putIfAbsent(entryName, value);
 
                         }
-                    } catch (IOException ignored) {
+                    } catch (IOException e) {
+                        ExceptionHandler.handleException("Failure to read class/resource bytes, could be a corrupted JAR or I/O issues.", e);
                     }
                 });
 
@@ -143,7 +171,7 @@ public class MultiClassManager {
                 resources.put(fileInput.getName(), resourceTemp);
 
             } catch (IOException e) {
-                throw new RuntimeException("Error reading JAR file: " + e.getMessage(), e);
+                ExceptionHandler.handleException("Failed to read JAR file, potentially could be a corrupted JAR or not actually a JAR file.", e);
             }
         }
     }
@@ -152,7 +180,8 @@ public class MultiClassManager {
      * <h6>Applies targeted class changes to classes read from a specific JAR file.
      *
      * @param fileName     The name of the JAR file to which changes are applied.
-     * @param classChanges One or more {@linkplain IClassChange} objects representing the changes to be applied to classes.
+     * @param classChanges One or more {@linkplain IClassChange} objects representing the changes to be applied to
+     *                     classes.
      */
     public void applyTargetedChanges(String fileName, IClassChange... classChanges) {
         if (!fileNames.contains(fileName)) {
@@ -181,7 +210,8 @@ public class MultiClassManager {
     /**
      * <h6>Applies class changes to classes read from all loaded JAR files.
      *
-     * @param classChanges One or more {@linkplain IClassChange} objects representing the changes to be applied to classes.
+     * @param classChanges One or more {@linkplain IClassChange} objects representing the changes to be applied to
+     *                     classes.
      */
     public void applyChanges(IClassChange... classChanges) {
         for (String fileName : fileNames) {
@@ -193,7 +223,8 @@ public class MultiClassManager {
      * <h6>Applies targeted resource changes to resources read from a specific JAR file.
      *
      * @param fileName        The name of the JAR file to which changes are applied.
-     * @param resourceChanges One or more {@linkplain IResourceChange} objects representing the changes to be applied to resources.
+     * @param resourceChanges One or more {@linkplain IResourceChange} objects representing the changes to be applied to
+     *                        resources.
      */
     public void applyTargetedChanges(String fileName, IResourceChange... resourceChanges) {
         if (!fileNames.contains(fileName)) {
@@ -222,7 +253,8 @@ public class MultiClassManager {
     /**
      * <h6>Applies resource changes to resources read from all loaded JAR files.
      *
-     * @param resourceChanges One or more {@linkplain IResourceChange} objects representing the changes to be applied to resources.
+     * @param resourceChanges One or more {@linkplain IResourceChange} objects representing the changes to be applied to
+     *                        resources.
      */
     public void applyChanges(IResourceChange... resourceChanges) {
         for (String fileName : fileNames) {
@@ -261,7 +293,7 @@ public class MultiClassManager {
                     classTempMap.forEach((className, classData) -> {
                         String entryName = className;
                         if (!entryName.contains(".class")) {
-                            entryName = entryName.concat(".class");
+                            entryName = entryName + ".class";
                         }
 
                         try {
@@ -269,7 +301,7 @@ public class MultiClassManager {
                             zipOutputStream.write(classData);
                             zipOutputStream.closeEntry();
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            ExceptionHandler.handleException("Failed to read '" + className + "', in '" + fileName + "'.", e);
                         }
                     });
 
@@ -279,13 +311,13 @@ public class MultiClassManager {
                             zipOutputStream.write(resourceData);
                             zipOutputStream.closeEntry();
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            ExceptionHandler.handleException("Failed to read '" + resourceName + "', in '" + fileName + "'.", e);
                         }
                     });
 
 
                 } catch (IOException e) {
-                    throw new RuntimeException("Failed to create Output File" + fileName);
+                    ExceptionHandler.handleException("Failure to compress class/resource data, maybe null bytes or I/O issues.", e);
                 }
 
                 return byteArrayOutputStream.toByteArray();
@@ -294,8 +326,8 @@ public class MultiClassManager {
     }
 
     /**
-     * <h6>Creates an array of {@linkplain IOutputFile} objects representing the output files containing modified classes
-     * and resources from all loaded JAR files.
+     * <h6>Creates an array of {@linkplain IOutputFile} objects representing the output files containing modified
+     * classes and resources from all loaded JAR files.
      *
      * @return An array of {@linkplain IOutputFile} objects representing the generated output files.
      */
@@ -309,6 +341,14 @@ public class MultiClassManager {
         }
 
         return outputFiles.toArray(new IOutputFile[0]);
+    }
+
+    public ConcurrentHashMap<String, ConcurrentHashMap<String, byte[]>> getClasses() {
+        return new ConcurrentHashMap<>(classes);
+    }
+
+    public ConcurrentHashMap<String, ConcurrentHashMap<String, byte[]>> getResources() {
+        return new ConcurrentHashMap<>(resources);
     }
 
     /**
@@ -328,5 +368,33 @@ public class MultiClassManager {
         fileNames.clear();
         classes.clear();
         resources.clear();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MultiClassManager that = (MultiClassManager) o;
+        return Objects.equals(fileNames, that.fileNames)
+               && Objects.equals(getClasses(), that.getClasses())
+               && Objects.equals(getResources(), that.getResources());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileNames, getClasses(), getResources());
+    }
+
+    @Override
+    public String toString() {
+        return "MultiClassManager{" +
+               "fileNames=" + fileNames +
+               ", classes=" + classes +
+               ", resources=" + resources +
+               '}';
     }
 }

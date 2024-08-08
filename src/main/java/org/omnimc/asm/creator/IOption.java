@@ -22,29 +22,16 @@
  * SOFTWARE.
  */
 
-package org.omnimc.asm.common;
+package org.omnimc.asm.creator;
 
-import org.jetbrains.annotations.ApiStatus;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.objectweb.asm.ClassWriter;
 
 /**
  * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
  * @since 2.2.3
  */
-@ApiStatus.Internal
-public final class ByteUtil {
+public interface IOption {
 
-    public static byte[] toByteArray(InputStream inputStream, ByteArrayOutputStream byteArrayOutputStream) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
+   void runOption(ClassWriter classWriter);
 
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, bytesRead);
-        }
-
-        return byteArrayOutputStream.toByteArray();
-    }
 }

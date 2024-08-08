@@ -22,29 +22,19 @@
  * SOFTWARE.
  */
 
-package org.omnimc.asm.common;
+repositories {
+    mavenCentral()
+}
 
-import org.jetbrains.annotations.ApiStatus;
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+    implementation 'org.jetbrains:annotations:24.0.0'
 
-/**
- * @author <b><a href=https://github.com/CadenCCC>Caden</a></b>
- * @since 2.2.3
- */
-@ApiStatus.Internal
-public final class ByteUtil {
-
-    public static byte[] toByteArray(InputStream inputStream, ByteArrayOutputStream byteArrayOutputStream) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            byteArrayOutputStream.write(buffer, 0, bytesRead);
-        }
-
-        return byteArrayOutputStream.toByteArray();
-    }
+    implementation 'org.ow2.asm:asm:9.7'
+    implementation 'org.ow2.asm:asm-tree:9.7'
+    implementation 'org.ow2.asm:asm-analysis:9.7'
+    implementation group: 'org.ow2.asm', name: 'asm-commons', version: '9.7'
+    implementation group: 'org.ow2.asm', name: 'asm-util', version: '9.7'
 }
