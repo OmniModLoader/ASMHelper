@@ -102,7 +102,7 @@ public class MultiClassManager {
      * @throws RuntimeException If any of the input files are not JAR files or an I/O error occurs during file reading.
      */
     public void readJarFiles(@NotNull File... fileInputs) {
-        Objects.requireNonNull(fileInputs);
+        Objects.requireNonNull(fileInputs); //TODO why double null check...?
 
         for (File fileInput : fileInputs) {
             if (!fileInput.getName().endsWith(".jar")) {
